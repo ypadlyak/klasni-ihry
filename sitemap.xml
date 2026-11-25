@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://ypadlyak.github.io/klasni-ihry/</loc><lastmod>2026-11-25</lastmod></url>
-  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/perspective-house/</loc><lastmod>2026-11-25</lastmod></url>
-  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/landscape/</loc><lastmod>2026-11-25</lastmod></url>
-  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/format/</loc><lastmod>2026-11-25</lastmod></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/en/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/perspective-house/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/perspective-house/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/perspective-house/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/en/games/perspective-house/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/perspective-house/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/perspective-house/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/landscape/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/landscape/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/landscape/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/en/games/landscape/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/landscape/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/landscape/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/games/format/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/format/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/format/"/></url>
+  <url><loc>https://ypadlyak.github.io/klasni-ihry/en/games/format/</loc><lastmod>2026-11-26</lastmod><xhtml:link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/games/format/"/><xhtml:link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/games/format/"/></url>
 </urlset>
