@@ -135,8 +135,11 @@ def make_cert(ip):
             "-keyout", key, "-out", crt, "-subj", "/CN=house-perspective"]
     san = ["-addext", f"subjectAltName=IP:{ip},DNS:localhost,IP:127.0.0.1"]
     for cmd in (base + san, base):
-        if subprocess.run(cmd, capture_output=True).returncode == 0:
-            return crt, key
+        try:
+            if subprocess.run(cmd, capture_output=True).returncode == 0:
+                return crt, key
+        except OSError:
+            return None  # no openssl (e.g. Windows): run on plain http, selfies only on the teacher laptop
     return None
 
 
