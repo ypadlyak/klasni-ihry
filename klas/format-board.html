@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Рейтинг: Реферат до друку</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#e7ecef;--panel:#fff;--ink:#252a31;--muted:#5b6572;--line:#d5dce2;--accent:#e9752b;--ok:#2b9a58;--gold:#d99a00;--chip:#f1f4f6;
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;--f-body:"Manrope",system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root{--bg:#14181d;--panel:#1c2128;--ink:#eef1f4;--muted:#a2acb8;--line:#2f3741;--accent:#ff9452;--ok:#4cc47e;--gold:#ffc53d;--chip:#252b33;color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:20px}
+[hidden]{display:none!important}
+.wrap{max-width:1400px;margin:0 auto;padding:28px max(16px,3vw);display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px}
+h1{font-family:var(--f-display);font-size:clamp(1.6rem,3.4vw,2.8rem);margin:0;letter-spacing:-.01em}
+.join{background:var(--panel);border:2px solid var(--accent);border-radius:10px;padding:10px 18px}
+.join span{display:block;font-size:.8rem;color:var(--muted);font-weight:700}
+.join b{font-family:var(--f-display);font-size:clamp(1.2rem,2.4vw,2rem);font-weight:500}
+.stats{color:var(--muted);font-weight:600}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:700;font-size:.9rem;border-radius:8px;padding:10px 16px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.ctl .note{font-size:.8rem;color:var(--muted)}
+.ctl .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+select{font:inherit;font-weight:700;font-size:.9rem;border-radius:8px;padding:9px 10px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.clock{display:flex;align-items:baseline;gap:16px;background:var(--panel);border-radius:12px;padding:10px 22px;align-self:flex-start}
+.clock span{font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.05em}
+.clock b{font-family:var(--f-display);font-size:clamp(2.4rem,6vw,4.5rem);font-variant-numeric:tabular-nums;line-height:1}
+.clock.warn{background:#d43f3f}.clock.warn span,.clock.warn b{color:#fff}
+.dash{color:var(--muted)}
+table{width:100%;border-collapse:separate;border-spacing:0 6px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:.8rem;color:var(--muted);letter-spacing:.04em;padding:0 14px}
+td{background:var(--panel);padding:12px 14px}
+td:first-child{border-radius:8px 0 0 8px;font-family:var(--f-display);width:2.5em}
+td:last-child{border-radius:0 8px 8px 0}
+tr.top td:first-child{color:var(--gold)}
+.name{font-weight:700;font-size:1.1em}
+.score{font-family:var(--f-display);font-size:1.3em;text-align:right}
+.bar{height:10px;background:var(--chip);border-radius:5px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .5s}
+.bar.fin i{background:var(--ok)}
+.st{color:var(--gold);white-space:nowrap}
+.tag{font-size:.75em;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:6px}
+.tag.live{color:var(--accent)}
+.tag.fin{color:var(--ok)}
+.badges{font-size:.75em;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:40px}
+.tw{overflow-x:auto}
+/* podium + holographic prize cards */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:end;padding:10px 0 20px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:12px}
+.slot.p1{order:2}.slot.p2{order:1}.slot.p3{order:3}
+.step{width:100%;border-radius:10px 10px 0 0;background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:2.4rem;color:var(--muted)}
+.p1 .step{height:120px;color:var(--gold)}.p2 .step{height:80px}.p3 .step{height:56px}
+.pcard{position:relative;width:min(260px,100%);aspect-ratio:5/7;border-radius:16px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;overflow:hidden;box-shadow:0 18px 40px -14px rgba(0,0,0,.6);text-shadow:0 1px 3px rgba(0,0,0,.45);animation:flipIn .9s cubic-bezier(.2,.9,.3,1.3) backwards}
+.p1 .pcard{width:min(300px,100%);animation-delay:1.6s}.p2 .pcard{animation-delay:.8s}.p3 .pcard{animation-delay:0s}
+.pcard::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.55) 28%,transparent 36% 70%,rgba(255,255,255,.35) 78%,transparent 86%);animation:spin 4s linear infinite;mix-blend-mode:overlay;pointer-events:none}
+.pcard>*{position:relative}
+.r1{background:linear-gradient(135deg,#7a4f00,#f5c542 45%,#fff1b8 55%,#b8860b)}
+.r2{background:linear-gradient(135deg,#3b1670,#9b5cf6 50%,#e3c8ff 60%,#5b21b6)}
+.r3{background:linear-gradient(135deg,#0b3c74,#3b9cf0 50%,#c8e6ff 60%,#1d4ed8)}
+.prar{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.pnum{font-family:var(--f-display);font-weight:700;font-size:5rem;line-height:1;text-align:center}
+.ptitle{font-family:var(--f-display);font-weight:500;font-size:1rem;line-height:1.25}
+.pname{font-weight:700;font-size:1.15rem;margin-top:4px}
+.paura{font-family:var(--f-display);font-weight:700;font-size:1.1rem;align-self:flex-end;background:rgba(0,0,0,.28);padding:3px 10px;border-radius:999px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flipIn{from{transform:perspective(800px) rotateY(100deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.pcard,.pcard::before{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="h1">Рейтинг класу</h1>
+      <div class="stats" id="stats">Реферат до друку</div>
+    </div>
+    <div class="join"><span>ВІДКРИЙ НА СВОЄМУ КОМПʼЮТЕРІ</span><b id="url">...</b></div>
+  </header>
+  <div class="clock" id="clock" hidden><span id="clockLbl">ДО КІНЦЯ</span><b id="clockVal">12:00</b></div>
+  <div class="ctl" id="ctl" hidden>
+    <label class="note" for="mins">Таймер:</label>
+    <select id="mins"><option value="8">8 хв</option><option value="10">10 хв</option><option value="12" selected>12 хв</option><option value="15">15 хв</option></select>
+    <button id="bStart" type="button">Старт таймера</button>
+    <button id="bStop" type="button" hidden>Зупинити таймер</button>
+    <span class="sep"></span>
+    <button class="primary" id="bAward" type="button">Нагородити трійку</button>
+    <button id="bResume" type="button" hidden>Продовжити змагання</button>
+    <span class="note" id="ctlNote">Рейтинг замерзне, переможці побачать свої картки.</span>
+    <span class="sep"></span>
+    <button id="bClear" type="button">Новий клас</button>
+  </div>
+  <div class="podium" id="podium" hidden></div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>#</th><th>Учень</th><th>Прогрес</th><th>Зірки</th><th>Час</th><th style="text-align:right">Бали</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="6" class="empty">Чекаємо на перших учнів...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<script>
+const PRIZES=[
+  {cls:'r1',rar:'Легендарна',title:'Головний редактор',aura:'+1000 аури'},
+  {cls:'r2',rar:'Епічна',title:'Майстер полів і відступів',aura:'+700 аури'},
+  {cls:'r3',rar:'Рідкісна',title:'Друкар класу',aura:'+500 аури'}];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const $=id=>document.getElementById(id);
+let shownCer=null;
+function card(i,nm){const p=PRIZES[i];
+  return '<div class="pcard '+p.cls+'"><div class="prar">'+p.rar+' картка</div><div class="pnum">'+(i+1)+'</div><div><div class="ptitle">'+p.title+'</div><div class="pname">'+esc(nm)+'</div></div><div class="paura">'+p.aura+'</div></div>';}
+async function act(action){
+  try{const r=await fetch('api/ceremony',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});
+    if(r.status===403)$('ctlNote').textContent='Кнопка працює лише на самому ноутбуці: відкрий localhost:8000/board.';}catch(e){}
+  tick();
+}
+$('bAward').onclick=()=>act('start');
+$('bResume').onclick=()=>act('stop');
+let round=null, clockOff=0;
+async function roundAct(action){
+  try{await fetch('api/round',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,minutes:Number($('mins').value)})});}catch(e){}
+  tick();
+}
+$('bStart').onclick=()=>roundAct('start');
+let clearArm=null;
+$('bClear').onclick=async()=>{
+  if(!clearArm){
+    $('bClear').textContent='Точно стерти рейтинг? Натисни ще раз';$('bClear').style.borderColor='#d43f3f';
+    clearArm=setTimeout(()=>{clearArm=null;$('bClear').textContent='Новий клас';$('bClear').style.borderColor='';},4000);return}
+  clearTimeout(clearArm);clearArm=null;$('bClear').textContent='Новий клас';$('bClear').style.borderColor='';
+  try{await fetch('api/clear',{method:'POST'});}catch(e){}
+  $('rows').innerHTML='<tr><td colspan="6" class="empty">Чекаємо на перших учнів...</td></tr>';
+  tick();
+};
+$('bStop').onclick=()=>roundAct('stop');
+function drawClock(){
+  $('clock').hidden=!round;
+  $('bStart').hidden=!!round; $('bStop').hidden=!round; $('mins').disabled=!!round;
+  if(!round)return;
+  const left=Math.max(0,Math.ceil((round.ends-(Date.now()+clockOff))/1000));
+  $('clockVal').textContent=left?fmt(left):'Час вийшов!';
+  $('clockLbl').textContent=left?'ДО КІНЦЯ':'';
+  $('clock').classList.toggle('warn',left<=60);
+}
+setInterval(drawClock,250);
+async function tick(){
+  try{
+    const d=await (await fetch('api/board',{cache:'no-store'})).json();
+    $('url').textContent=d.url.replace('http://','');
+    $('ctl').hidden=!d.teacher;
+    round=d.round; if(d.now) clockOff=d.now-Date.now(); drawClock();
+    const c=d.ceremony;
+    $('bAward').hidden=!!c; $('bResume').hidden=!c;
+    $('h1').textContent=c?'Переможці уроку':'Рейтинг класу';
+    if(c){
+      if(shownCer!==c.id){shownCer=c.id;
+        $('podium').innerHTML=c.top.map((t,i)=>'<div class="slot p'+(i+1)+'">'+card(i,t.name)+'<div class="step">'+(i+1)+'</div></div>').join('');}
+      $('podium').hidden=false;
+    } else { $('podium').hidden=true; shownCer=null; }
+    const b=d.board;
+    const live=b.filter(r=>r.drawing).length, fin=b.filter(r=>r.finished).length;
+    $('stats').textContent=(c?'Результати зафіксовано · ':'')+'Учасників: '+b.length+' · працюють зараз: '+live+' · фінішували: '+fin;
+    if(!b.length){$('rows').innerHTML='<tr><td colspan="6" class="empty">Чекаємо на перших учнів...</td></tr>';return;}
+    $('rows').innerHTML=b.map((r,i)=>{
+      const pct=r.finished?100:Math.round(r.step/r.steps*100);
+      const tag=r.drawing?'<span class="tag live">працює</span>':(r.finished?'<span class="tag fin">фініш</span>':'');
+      return '<tr class="'+(i<3&&r.finished?'top':'')+'"><td>'+(r.finished?i+1:'')+'</td>'+
+        '<td><span class="name">'+esc(r.name)+'</span>'+tag+(r.badges&&r.badges.length?'<div class="badges">'+r.badges.map(esc).join(' · ')+'</div>':'')+'</td>'+
+        '<td><div class="bar'+(r.finished?' fin':'')+'"><i style="width:'+pct+'%"></i></div></td>'+
+        '<td class="st">'+(r.finished?'★ '+r.stars:'')+'</td>'+
+        '<td>'+(r.finished?fmt(r.time):'')+'</td>'+
+        '<td class="score">'+(r.finished?r.score:'<span class="dash">—</span>')+'</td></tr>';
+    }).join('');
+  }catch(e){}
+}
+tick();setInterval(tick,2000);
+</script>
+</body>
+</html>
+
+<!-- © 2026 Yuriy Padlyak. «Класні ігри». Ліцензія CC BY-NC-SA 4.0: https://creativecommons.org/licenses/by-nc-sa/4.0/ . Комерційне використання лише за окремою ліцензією автора. -->

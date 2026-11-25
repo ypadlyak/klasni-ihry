@@ -1,0 +1,6 @@
+# Дані класу: імена й результати учнів, сертифікати. Не публікувати.
+*-scores.json
+kulky-world.json
+.house-cert/
+__pycache__/
+.DS_Store

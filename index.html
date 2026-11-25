@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Класні ігри</title>
+<meta name="description" content="Безкоштовні навчальні ігри для уроків інформатики: перспектива, форматування документа, спільний блоковий світ для найменших. Для одного учня в браузері або для всього класу з рейтингом на проєкторі.">
+<meta name="author" content="Юрій Падляк (Yuriy Padlyak)">
+<meta property="og:title" content="Класні ігри">
+<meta property="og:description" content="Безкоштовні навчальні ігри для уроків інформатики, 0–7 клас.">
+<meta property="og:image" content="assets/landscape.jpg">
+<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<!-- © 2026 Юрій Падляк (Yuriy Padlyak). Ліцензія CC BY-NC-SA 4.0. Комерційне використання лише за окремою ліцензією автора. -->
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#ffffff; --ink:#23272e; --muted:#5d6570; --line:#e2ddd2;
+  --accent:#e9752b; --accent-ink:#ffffff; --blue:#3a78d6; --green:#2b9a58; --chip:#efeadf;
+  --shadow:0 1px 2px rgba(40,30,10,.06),0 8px 24px rgba(40,30,10,.07);
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15181c; --panel:#1e2228; --ink:#eef1f4; --muted:#a3acb7; --line:#2e343c;
+  --accent:#ff9452; --accent-ink:#1b1206; --blue:#6ea2f2; --green:#4cc47e; --chip:#272c33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15181c; --panel:#1e2228; --ink:#eef1f4; --muted:#a3acb7; --line:#2e343c;
+  --accent:#ff9452; --accent-ink:#1b1206; --blue:#6ea2f2; --green:#4cc47e; --chip:#272c33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--f-body);-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.hero{padding:56px 16px 28px}
+.kicker{display:inline-block;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(36px,7vw,64px)/1.05 var(--f-display);margin:10px 0 16px;letter-spacing:-.01em}
+.lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:62ch;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0;list-style:none}
+.facts li{background:var(--chip);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
+h2{font:700 clamp(22px,3.4vw,30px)/1.2 var(--f-display);margin:0 0 18px}
+section.wrap{padding:36px 16px}
+.grid{display:grid;grid-template-columns:1fr;gap:22px}
+@media (min-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--chip);border-bottom:1px solid var(--line)}
+.card .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.tag.grade{background:var(--accent);color:var(--accent-ink)}
+.card h3{font:700 20px/1.25 var(--f-display);margin:2px 0 0}
+.card p{margin:0;color:var(--muted);font-size:15.5px}
+.actions{margin-top:auto;padding-top:8px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:15px;text-decoration:none;border-radius:12px;padding:10px 16px;border:1px solid var(--line);color:var(--ink);background:var(--panel)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.05)}
+.btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;box-shadow:var(--shadow)}
+.box h3{font:700 18px/1.3 var(--f-display);margin:0 0 8px}
+.box p,.box li{color:var(--muted);font-size:15.5px}
+.box ol,.box ul{padding-left:20px;margin:8px 0}
+code{font:14px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--chip);padding:2px 6px;border-radius:6px;color:var(--ink);overflow-wrap:anywhere}
+.lic{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;margin:0 0 16px;padding:0;list-style:none}
+.lic li{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;color:var(--muted)}
+.lic b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+.ok b::before{content:"✓ ";color:var(--green)} .no b::before{content:"✕ ";color:#d43f3f}
+footer.wrap{padding:32px 16px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:20px}
+</style>
+</head>
+<body>
+<header class="hero wrap">
+  <span class="kicker">Навчальні ігри для уроків інформатики</span>
+  <h1>Класні ігри</h1>
+  <p class="lead">Мої перші ігри для уроків: діти вчаться крок за кроком, отримують бали за кожну правильну дію, а наприкінці уроку троє найкращих отримують колекційні картки. Грати можна просто в браузері або всім класом, з рейтингом на проєкторі.</p>
+  <ul class="facts">
+    <li>Безкоштовно для шкіл і вчителів</li>
+    <li>Без реєстрації і реклами</li>
+    <li>Працює на комп'ютері, планшеті й телефоні</li>
+    <li>Українською</li>
+  </ul>
+</header>
+
+<main>
+<section class="wrap" id="games">
+  <h2>Ігри</h2>
+  <div class="grid">
+    <article class="card">
+      <img src="assets/perspective-house.jpg" alt="Будинок, намальований у перспективі з двома точками сходу" width="880" height="546" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">7 клас</span><span class="tag">графічний редактор</span></div>
+        <h3>Будинок у перспективі</h3>
+        <p>Лінійна перспектива з двома точками сходу. За 8 кроків учень проводить горизонт, ставить точки сходу, будує стіни, дах, вікна й двері, прибирає допоміжні лінії і розфарбовує малюнок.</p>
+        <div class="actions"><a class="btn primary" href="games/perspective-house/">▶ Грати</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="assets/landscape.jpg" alt="Дорога в ялинковий ліс, намальована з однією точкою сходу" width="880" height="546" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">7 клас</span><span class="tag">графічний редактор</span></div>
+        <h3>Пейзаж у перспективі</h3>
+        <p>Дорога в ялинковий ліс з однією точкою сходу. Окрім перспективи, учні розкладають шари картини від заднього плану до переднього, як у меню «Упорядкувати» Google Малюнків.</p>
+        <div class="actions"><a class="btn primary" href="games/landscape/">▶ Грати</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="assets/format.jpg" alt="Реферат на аркуші А4 з полями, заголовком і колонтитулами" width="952" height="532" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">5 клас</span><span class="tag">текстовий редактор</span></div>
+        <h3>Реферат до друку</h3>
+        <p>Учень готує реферат до друку: обирає розмір аркуша й орієнтацію, налаштовує поля, шрифт та інтервал, оформлює заголовок, додає колонтитули з номером сторінки, а потім переглядає і друкує.</p>
+        <div class="actions"><a class="btn primary" href="games/format/">▶ Грати</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="assets/kulky.jpg" alt="Тривимірний блоковий світ зі скринею для кульок" width="800" height="452" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">0 клас</span><span class="tag">гра всім класом</span><span class="tag">без читання</span></div>
+        <h3>Кулькосвіт</h3>
+        <p>Один спільний блоковий світ на весь клас. Кожна дитина обирає звірятко і грає з планшета. Збирачі разом наповнюють скриню кульками, а Заважайки будують їм перешкоди. П'ять рівнів, 3D-світ на проєкторі, команди перемішуються щорівня.</p>
+        <div class="actions"><a class="btn" href="#class">Як запустити в класі ↓</a></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="class">
+  <h2>Два способи грати</h2>
+  <div class="modes">
+    <div class="box">
+      <h3>🙋 Один учень</h3>
+      <p>Натисніть «Грати» біля гри. Нічого не потрібно встановлювати. Ім'я, селфі й прогрес зберігаються лише в цьому браузері та нікуди не надсилаються. Так можна повторити тему вдома або пройти урок самостійно.</p>
+    </div>
+    <div class="box">
+      <h3>🏫 Увесь клас</h3>
+      <p>Учительський ноутбук стає сервером класу. Учні бачать спільний рейтинг, а вчитель отримує на проєкторі таблицю, таймер уроку й нагородження трьох найкращих.</p>
+      <ol>
+        <li><a href="https://github.com/ypadlyak/klasni-ihry/archive/refs/heads/main.zip">Завантажте архів</a> і розпакуйте його.</li>
+        <li>У теці <code>klas</code> запустіть потрібну гру: <code>python3 landscape-server.py</code> (або <code>house-</code>, <code>format-</code>, <code>kulky-server.py</code>). Потрібен лише Python 3, інтернет не обов'язковий.</li>
+        <li>Учні в тій самій Wi-Fi мережі відкривають адресу, яку покаже сервер, наприклад <code>http://192.168.1.10:8000</code>.</li>
+        <li>На проєкторі відкрийте <code>http://localhost:8000/board</code>.</li>
+      </ol>
+      <p>Кулькосвіт працює лише в цьому режимі, бо всі діти грають в одному світі.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="license">
+  <h2>Умови використання</h2>
+  <ul class="lic">
+    <li class="ok"><b>Грати на уроках</b>У будь-якій школі, гуртку чи вдома, безкоштовно.</li>
+    <li class="ok"><b>Змінювати під свій клас</b>Перекладайте, додавайте кроки, а свої версії поширюйте на тих самих умовах.</li>
+    <li class="ok"><b>Ділитися</b>Обов'язково вказуйте автора та посилання на цю сторінку.</li>
+    <li class="no"><b>Продавати</b>Продаж, платні курси, платформи чи збірки з цими іграми дозволені лише за окремою ліцензією автора.</li>
+  </ul>
+  <p>Ігри поширюються за ліцензією <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.uk" rel="license">Creative Commons «Зазначення авторства — Некомерційна — Поширення на тих самих умовах» 4.0 Міжнародна (CC BY-NC-SA 4.0)</a>. Повний текст лежить у файлі <a href="https://github.com/ypadlyak/klasni-ihry/blob/main/LICENSE">LICENSE</a>, а пояснення простими словами у <a href="https://github.com/ypadlyak/klasni-ihry/blob/main/LICENSING.md">LICENSING.md</a>. Щодо комерційної ліцензії пишіть через <a href="https://github.com/ypadlyak/klasni-ihry/issues">GitHub</a>.</p>
+</section>
+</main>
+
+<footer class="wrap">
+  © 2026 Юрій Падляк · <a href="https://github.com/ypadlyak/klasni-ihry">Код на GitHub</a> · Тривимірний світ Кулькосвіту використовує <a href="https://threejs.org">three.js</a> (MIT).
+</footer>
+</body>
+</html>

@@ -1,0 +1,918 @@
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- © 2026 Yuriy Padlyak. «Класні ігри». Ліцензія CC BY-NC-SA 4.0: https://creativecommons.org/licenses/by-nc-sa/4.0/ . Комерційне використання лише за окремою ліцензією автора. -->
+<meta name="author" content="Юрій Падляк (Yuriy Padlyak)">
+<title>Будинок у перспективі</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+/* Layout: drafting table. Big paper sheet on the left, score + instruction card on the right; stacks on phones. */
+:root{
+  --bg:#e7ecef; --panel:#ffffff; --paper:#fbfaf5; --grid:#e9ece6;
+  --ink:#252a31; --muted:#5b6572; --line:#d5dce2;
+  --guide:#3a78d6; --horizon:#6c7f95; --accent:#e9752b; --hint:#8a5bd6;
+  --ok:#2b9a58; --err:#d43f3f; --chip:#f1f4f6; --gold:#d99a00;
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181d; --panel:#1c2128; --paper:#20262e; --grid:#262d36;
+  --ink:#eef1f4; --muted:#a2acb8; --line:#2f3741;
+  --guide:#6ea2f2; --horizon:#8ea3ba; --accent:#ff9452; --hint:#b597ff;
+  --ok:#4cc47e; --err:#ff6a6a; --chip:#252b33; --gold:#ffc53d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181d; --panel:#1c2128; --paper:#20262e; --grid:#262d36;
+  --ink:#eef1f4; --muted:#a2acb8; --line:#2f3741;
+  --guide:#6ea2f2; --horizon:#8ea3ba; --accent:#ff9452; --hint:#b597ff;
+  --ok:#4cc47e; --err:#ff6a6a; --chip:#252b33; --gold:#ffc53d; color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+[hidden]{display:none!important}
+.wrap{max-width:1320px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(1.3rem,2.6vw,1.9rem);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.95rem}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.steps li{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--chip);color:var(--muted);font-size:.85rem;font-weight:600;border:1.5px solid transparent}
+.steps li .n{font-variant-numeric:tabular-nums}
+.steps li.done{color:var(--ink)}
+.steps li .st{color:var(--gold);letter-spacing:-.05em}
+.steps li .st .off{color:var(--line)}
+.steps li.cur{border-color:var(--accent);color:var(--ink);background:var(--panel)}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 0 var(--line),0 8px 24px -16px rgba(0,0,0,.35);overflow:hidden;min-width:0}
+#cv{display:block;width:100%;height:auto;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+#cv.filling{cursor:pointer}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.who{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.92rem;color:var(--muted)}
+.who b{color:var(--ink)}
+.linkbtn{border:none;background:none;padding:0;color:var(--guide);text-decoration:underline;font-weight:600;font-size:.88rem;cursor:pointer}
+.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));gap:6px}
+.tile{background:var(--chip);border-radius:6px;padding:7px 9px;display:flex;flex-direction:column;min-width:0}
+.tile b{font-family:var(--f-display);font-weight:500;font-size:1.25rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile span{font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.03em}
+.tile.hot b{color:var(--accent)}
+.tile.warn{background:var(--err)}
+.tile.warn b,.tile.warn span{color:#fff}
+.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.18)}}
+.eyebrow{font-size:.85rem;letter-spacing:.02em;color:var(--muted);font-weight:700}
+.panel h2{font-family:var(--f-display);font-weight:500;font-size:1.3rem;margin:0;line-height:1.25;text-wrap:balance}
+.task{font-size:1.05rem;margin:0}
+.why{font-size:.92rem;color:var(--muted);margin:0;padding-left:12px;border-left:3px solid var(--line)}
+.msg{min-height:3em;padding:10px 12px;border-radius:6px;background:var(--chip);font-weight:600;font-size:.98rem}
+.msg.ok{color:var(--ok)}
+.msg.err{color:var(--err);animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:700;font-size:.95rem;border-radius:6px;padding:9px 14px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-size:1.05rem;padding:12px 18px}
+button.on{border-color:var(--hint);color:var(--hint)}
+button.warn{border-color:var(--err);color:var(--err)}
+.palette{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.sw{aspect-ratio:1;max-width:100%;border-radius:50%;border:2px solid var(--line);padding:0;cursor:pointer}
+.sw.sel{outline:3px solid var(--accent);outline-offset:2px}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{flex:none;display:inline-block;width:22px;height:0;border-top:3px solid}
+.legend i.dot{width:12px;height:12px;border:none;border-radius:50%;background:var(--accent)}
+.legend i.g{border-top:2px dashed var(--guide)}
+.legend i.h{border-top:3px dotted var(--hint)}
+.legend i.k{border-top:4px solid var(--ok)}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{padding:4px 10px;border-radius:999px;border:1.5px solid var(--gold);font-weight:700;font-size:.85rem}
+.badge.off{opacity:.35;border-color:var(--line)}
+.lbh{font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;gap:8px}
+.lb{display:flex;flex-direction:column;gap:2px;font-size:.92rem;font-variant-numeric:tabular-nums}
+.lb div{display:grid;grid-template-columns:2em minmax(0,1fr) auto;gap:8px;padding:4px 8px;border-radius:4px}
+.lb div span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .me{background:var(--chip);font-weight:700}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+/* name dialog */
+.modal{position:fixed;inset:0;background:rgba(12,16,22,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.card{background:var(--panel);color:var(--ink);border-radius:10px;padding:24px;max-width:430px;width:100%;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
+.card h2{font-family:var(--f-display);font-weight:700;font-size:1.4rem;margin:0}
+.card p{margin:0;color:var(--muted)}
+.card input{font:inherit;font-size:1.15rem;padding:11px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:60;width:100%;height:100%}
+/* prize cards: a deliberate single look (holographic foil), same in both themes */
+.pcard{position:relative;width:min(260px,70vw);aspect-ratio:5/7;border-radius:16px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;overflow:hidden;box-shadow:0 18px 40px -14px rgba(0,0,0,.6);text-shadow:0 1px 3px rgba(0,0,0,.45);margin:0 auto;animation:flipIn .9s cubic-bezier(.2,.9,.3,1.3)}
+.pcard::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent 0 20%,rgba(255,255,255,.55) 28%,transparent 36% 70%,rgba(255,255,255,.35) 78%,transparent 86%);animation:spin 4s linear infinite;mix-blend-mode:overlay;pointer-events:none}
+.pcard>*{position:relative}
+.card{max-height:calc(100vh - 32px);overflow-y:auto}
+.selfie{display:flex;flex-direction:column;gap:10px;align-items:center}
+.shot{width:150px;height:150px;border-radius:14px;background:var(--chip);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.8rem;color:var(--muted);padding:0}
+.shot span{padding:12px}
+.shot video,.shot img{width:100%;height:100%;object-fit:cover}
+.shot video{transform:scaleX(-1)}
+.filebtn{font-weight:700;font-size:.95rem;border-radius:6px;padding:9px 14px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.filebtn input{position:absolute;width:1px;height:1px;opacity:0}
+.pphoto{flex:1;min-height:0;margin:8px 0;border-radius:10px;background-size:cover;background-position:center;border:3px solid rgba(255,255,255,.75);position:relative}
+.pplace{position:absolute;top:-12px;right:-12px;width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.6);font-family:var(--f-display);font-weight:700;font-size:1.4rem;display:flex;align-items:center;justify-content:center}
+.pcard.r0{background:linear-gradient(135deg,#3f4a56,#9aa8b6 50%,#e6edf3 60%,#56606b)}
+.pcard.r1{background:linear-gradient(135deg,#7a4f00,#f5c542 45%,#fff1b8 55%,#b8860b)}
+.pcard.r2{background:linear-gradient(135deg,#3b1670,#9b5cf6 50%,#e3c8ff 60%,#5b21b6)}
+.pcard.r3{background:linear-gradient(135deg,#0b3c74,#3b9cf0 50%,#c8e6ff 60%,#1d4ed8)}
+.prar{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.pnum{font-family:var(--f-display);font-weight:700;font-size:5.5rem;line-height:1;text-align:center}
+.ptitle{font-family:var(--f-display);font-weight:500;font-size:1.05rem;line-height:1.25}
+.pname{font-weight:700;font-size:1.05rem;margin-top:4px}
+.paura{font-family:var(--f-display);font-weight:700;font-size:1.2rem;align-self:flex-end;background:rgba(0,0,0,.28);padding:3px 10px;border-radius:999px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flipIn{from{transform:perspective(800px) rotateY(100deg) scale(.6);opacity:0}to{transform:none;opacity:1}}
+.prizes{display:flex;flex-wrap:wrap;gap:6px}
+.prizes span{font-size:.8rem;font-weight:700;color:#fff;padding:3px 9px;border-radius:999px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.prizes .r1{background:#c9970f}.prizes .r2{background:#7c3aed}.prizes .r3{background:#2563eb}
+.podium{display:flex;flex-direction:column;gap:4px}
+.podium div{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:6px;background:var(--chip);font-weight:700}
+/* neon skin, unlocked by a top-3 card */
+#cv.neon{--paper:#0b1020;--grid:#151c36;--ink:#5ff3ff;--guide:#ff4fd8;--horizon:#7c8cff;--muted:#a8b4ff;--accent:#ffe14f}
+#cv.neon .ln-solid{filter:drop-shadow(0 0 5px #5ff3ff)}
+#cv.neon .ln-guide{filter:drop-shadow(0 0 3px #ff4fd8)}
+@media (prefers-reduced-motion: reduce){.pcard,.pcard::before{animation:none}}
+/* svg */
+.ln-solid{stroke:var(--ink);stroke-width:3.4;stroke-linecap:round;fill:none}
+.ln-guide{stroke:var(--guide);stroke-width:1.6;stroke-dasharray:8 6;fill:none;opacity:.85}
+.ln-hz{stroke:var(--horizon);stroke-width:2.2}
+.ln-hz.faint{opacity:.45}
+.ghost{stroke:var(--hint);stroke-width:4;stroke-dasharray:2 11;stroke-linecap:round;fill:none;animation:march 1s linear infinite}
+.ghostc{fill:none;stroke:var(--hint);stroke-width:3;stroke-dasharray:4 6}
+@keyframes march{to{stroke-dashoffset:-26}}
+.rubber{stroke:var(--accent);stroke-width:3;stroke-dasharray:6 6;stroke-linecap:round}
+.rubber.hit{stroke:var(--ok);stroke-dasharray:none;stroke-width:5}
+.bad{stroke:var(--err);stroke-width:4;stroke-linecap:round;animation:fade 1s forwards}
+@keyframes fade{0%{opacity:1}70%{opacity:.8}100%{opacity:0}}
+.fresh{animation:flash .9s ease-out}
+@keyframes flash{0%{stroke:var(--ok);stroke-width:8;opacity:1}}
+.anchor{fill:var(--accent)}
+.ring{fill:none;stroke:var(--accent);stroke-width:2.5;animation:pulse 1.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(2.2);opacity:0}}
+.vp{fill:var(--ink)}
+.lbl{fill:var(--muted);font-family:var(--f-body);font-size:17px;font-weight:600}
+.pts{font-family:var(--f-display);font-size:30px;font-weight:700;fill:var(--ok);stroke:var(--paper);stroke-width:5px;paint-order:stroke;animation:rise 1.3s ease-out forwards}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-60px);opacity:0}}
+.region{cursor:pointer}
+.region:hover{filter:brightness(.93)}
+@media (prefers-reduced-motion: reduce){.ghost,.ring,.fresh,.msg.err,.bad,.bump{animation:none}.ring{opacity:.5}.pts{animation-duration:.01s;animation-delay:1s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Будинок у перспективі</h1>
+      <div class="sub">7 клас · Лінійна перспектива з двома точками сходу</div>
+    </div>
+    <ol class="steps" id="steps"></ol>
+  </header>
+  <div class="app">
+    <div class="sheet"><svg id="cv" viewBox="0 0 1000 620" aria-label="Аркуш для побудови будинку"></svg></div>
+    <aside class="panel">
+      <div class="who"><span>Малює: <b id="whoName">...</b></span><button class="linkbtn" id="bName" type="button">змінити</button></div>
+      <div class="hud">
+        <div class="tile"><span>БАЛИ</span><b id="hScore">0</b></div>
+        <div class="tile" id="tStreak"><span>СЕРІЯ</span><b id="hStreak">0</b></div>
+        <div class="tile"><span>ЧАС</span><b id="hTime">0:00</b></div>
+        <div class="tile" id="tRank" hidden><span>МІСЦЕ</span><b id="hRank">-</b></div>
+        <div class="tile" id="tRound" hidden><span>ДО КІНЦЯ</span><b id="hRound">-</b></div>
+      </div>
+      <div class="eyebrow" id="eyebrow"></div>
+      <h2 id="title"></h2>
+      <p class="task" id="task"></p>
+      <p class="why" id="why"></p>
+      <div id="extra"></div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+      <div class="btns">
+        <button id="bHint" type="button">Підказка</button>
+        <button id="bUndo" type="button">Скасувати крок</button>
+        <button id="bReset" type="button">Почати спочатку</button>
+        <button id="bNeon" type="button" hidden>Неоновий режим</button>
+      </div>
+      <div class="legend">
+        <span><i class="dot"></i>звідси починай лінію</span>
+        <span><i class="k"></i>зелена: відпускай, лінія влучна</span>
+        <span><i class="g"></i>допоміжна лінія</span>
+        <span><i class="h"></i>підказка: де має бути лінія</span>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal" id="nameModal" hidden>
+  <form class="card" id="nameForm">
+    <h2>Привіт, художнику!</h2>
+    <p>Напиши своє імʼя і прізвище, щоб потрапити в рейтинг класу.</p>
+    <input type="text" id="nameIn" maxlength="40" autocomplete="off" placeholder="Імʼя Прізвище">
+    <div class="selfie">
+      <div class="shot"><video id="vid" playsinline muted hidden></video><img id="selfImg" alt="Твоє селфі" hidden><span id="shotPh">Тут буде твоє селфі для картки</span></div>
+      <div class="btns" style="justify-content:center">
+        <button type="button" id="bCam">Увімкнути камеру</button>
+        <button type="button" id="bSnap" class="primary" hidden>Зробити фото</button>
+        <label class="filebtn" id="fileLbl" hidden>Обрати фото<input type="file" id="fileIn" accept="image/*" capture="user"></label>
+        <button type="button" id="bDropPh" hidden>Без фото</button>
+      </div>
+      <p class="note" id="camNote">Селфі буде на твоїй картці. Фото лишається тільки на цьому компʼютері і нікуди не надсилається.</p>
+    </div>
+    <button class="primary" type="submit">Почати малювати</button>
+    <p class="note">Бали дають за кожну влучну лінію. Без помилок підряд набирається серія, і бали ростуть.</p>
+    <p class="note">Перші три місця на кінець уроку отримають колекційні картки:</p>
+    <div class="prizes"><span class="r1">Легендарна</span><span class="r2">Епічна</span><span class="r3">Рідкісна</span></div>
+  </form>
+</div>
+<div class="modal" id="cerModal" hidden><div class="card" id="cerCard"></div></div>
+<canvas id="fx" hidden></canvas>
+
+<script>
+(function(){
+const NS='http://www.w3.org/2000/svg', W=1000, H=620, KEY='house-persp-v2', NKEY='house-persp-name', LKEY='house-persp-local';
+const $=id=>document.getElementById(id);
+const svg=$('cv');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const dist=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y);
+const ls={get(k){try{return localStorage.getItem(k)}catch(_){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(_){}},del(k){try{localStorage.removeItem(k)}catch(_){}}};
+const SKEY='house-persp-selfie', DKEY='house-persp-day', SESSKEY='house-persp-session';
+
+function inter(p1,p2,p3,p4){
+  const d=(p1.x-p2.x)*(p3.y-p4.y)-(p1.y-p2.y)*(p3.x-p4.x);
+  const a=p1.x*p2.y-p1.y*p2.x, b=p3.x*p4.y-p3.y*p4.x;
+  return {x:(a*(p3.x-p4.x)-(p1.x-p2.x)*b)/d, y:(a*(p3.y-p4.y)-(p1.y-p2.y)*b)/d};
+}
+function quad(q0,q1,q2,q3){
+  const dx1=q1.x-q2.x,dx2=q3.x-q2.x,dx3=q0.x-q1.x+q2.x-q3.x;
+  const dy1=q1.y-q2.y,dy2=q3.y-q2.y,dy3=q0.y-q1.y+q2.y-q3.y;
+  const den=dx1*dy2-dx2*dy1;
+  const g=(dx3*dy2-dx2*dy3)/den, h=(dx1*dy3-dx3*dy1)/den;
+  const a=q1.x-q0.x+g*q1.x, b=q3.x-q0.x+h*q3.x, c=q0.x;
+  const d=q1.y-q0.y+g*q1.y, e=q3.y-q0.y+h*q3.y, f=q0.y;
+  return (u,v)=>{const w=g*u+h*v+1;return {x:(a*u+b*v+c)/w,y:(d*u+e*v+f)/w}};
+}
+
+// ---------- game state ----------
+const newState=()=>({done:[],scored:[],score:0,streak:0,bestStreak:0,mistakes:0,hints:0,stepMist:{},clean:true,t0:null,t1:null,bonus:null,attempt:Math.random().toString(36).slice(2,10)});
+let S=newState(), name='';
+let showHint=false, fresh=null, down=null, resetArm=false, showBuild=false, selColor='#bfe3f7';
+let online=false, board=[];
+
+function get(id){const d=S.done.find(x=>x.id===id);return d?d.data:null}
+function isDone(id){return S.done.some(x=>x.id===id)}
+
+function geo(){
+  const g={};
+  g.H0=get('hz')?.y ?? 285; g.VL=get('vl')?.x ?? 60; g.VR=get('vr')?.x ?? 940; g.C=get('cn')?.x ?? 500;
+  const H0=g.H0;
+  g.vl={x:g.VL,y:H0}; g.vr={x:g.VR,y:H0};
+  g.Ft={x:g.C,y:H0-80}; g.Fb={x:g.C,y:H0+140};
+  const along=(p,v,x)=>{const t=(x-p.x)/(v.x-p.x);return {x,y:p.y+t*(v.y-p.y)}};
+  const xL=g.C-0.42*(g.C-g.VL), xR=g.C+0.55*(g.VR-g.C);
+  g.Lt=along(g.Ft,g.vl,xL); g.Lb=along(g.Fb,g.vl,xL);
+  g.Rt=along(g.Ft,g.vr,xR); g.Rb=along(g.Fb,g.vr,xR);
+  g.Bt=inter(g.Lt,g.vr,g.Rt,g.vl); g.Bb=inter(g.Lb,g.vr,g.Rb,g.vl);
+  g.HL=quad(g.Lb,g.Fb,g.Ft,g.Lt); g.HR=quad(g.Fb,g.Rb,g.Rt,g.Ft); g.HB=quad(g.Bb,g.Rb,g.Rt,g.Bt);
+  g.c=g.HL(.5,.5); g.P=g.HL(.5,1.6); g.R2=g.HB(.5,1.6);
+  g.M1=g.HL(.5,1); g.M2=g.HB(.5,1);
+  return g;
+}
+
+const WIN={
+  w1:{wall:'HR',u:[.56,.84],v:[.42,.8]},
+  d:{wall:'HR',u:[.14,.36],v:[0,.7]},
+  w2:{wall:'HL',u:[.66,.34],v:[.42,.8]}
+};
+const wp=(g,k,ui,vi)=>{const o=WIN[k];return g[o.wall](o.u[ui],o.v[vi])};
+
+// free: the end is not marked on the sheet, so direction + length is enough
+const seg=(id,a,b,cls,o)=>Object.assign({id,kind:'seg',a,b,cls},o||{});
+const STEPS=[
+ {t:'Лінія горизонту',phases:[{
+   text:'Натисни і протягни рівну лінію через аркуш там, де буде лінія горизонту. Це рівень твоїх очей.',
+   why:'Все, що вище горизонту, ми бачимо знизу. Все, що нижче, бачимо згори.',
+   targets:[{id:'hz',kind:'horizon'}]}]},
+ {t:'Дві точки сходу',phases:[{
+   text:'Постав дві точки сходу: клацни біля лівого краю аркуша, потім біля правого. Точки самі стануть на горизонт.',
+   why:'Паралельні лінії будинку, що тікають від нас, сходяться в цих точках. Як рейки, що зустрічаються вдалині.',
+   targets:[{id:'vl',kind:'vp',side:-1},{id:'vr',kind:'vp',side:1}]}]},
+ {t:'Передній кут',phases:[{
+   text:'Протягни вертикальну лінію між точками сходу, згори вниз. Це найближчий до нас кут будинку.',
+   why:'Вертикальні лінії в цій перспективі завжди лишаються вертикальними.',
+   targets:[{id:'cn',kind:'corner'}]}]},
+ {t:'Стіни',phases:[
+  {text:'Від верхнього і нижнього кінця кута протягни допоміжні лінії до обох точок сходу. Їх чотири. Веди від помаранчевої точки аж до точки сходу.',
+   why:'Верх і низ стіни паралельні, тому сходяться в одній точці сходу.',
+   err:'Лінія має йти від кута до самої точки сходу. Почни з помаранчевої точки і доведи до чорної точки на горизонті.',
+   targets:[seg('g1',g=>g.Ft,g=>g.vl,'guide'),seg('g2',g=>g.Ft,g=>g.vr,'guide'),seg('g3',g=>g.Fb,g=>g.vl,'guide'),seg('g4',g=>g.Fb,g=>g.vr,'guide')]},
+  {text:'Обріж стіни: протягни дві вертикалі від помаранчевих точок униз до нижньої допоміжної лінії.',
+   why:'Ліва стіна здається коротшою, бо вона сильніше повернута від нас.',
+   err:'Почни з помаранчевої точки і веди рівно вниз, аж до нижньої допоміжної лінії.',
+   targets:[seg('wl',g=>g.Lt,g=>g.Lb,'solid'),seg('wr',g=>g.Rt,g=>g.Rb,'solid')]},
+  {text:'Обведи стіни: проведи суцільні лінії по допоміжних від переднього кута до кожної вертикалі, вгорі і внизу. Їх чотири.',
+   why:'Допоміжні лінії довгі, а стіна займає тільки їхню частину: від кута до вертикалі.',
+   err:'Почни з кінця переднього кута (помаранчева точка) і веди по допоміжній лінії до вертикалі стіни.',
+   done:'Стіни обведено. Будинок уже має обʼєм.',
+   targets:[seg('o1',g=>g.Ft,g=>g.Lt,'solid'),seg('o2',g=>g.Fb,g=>g.Lb,'solid'),seg('o3',g=>g.Ft,g=>g.Rt,'solid'),seg('o4',g=>g.Fb,g=>g.Rb,'solid')]}
+ ]},
+ {t:'Дах',phases:[
+  {text:'Знайдемо середину лівої стіни. Протягни дві діагоналі: з кожного верхнього кута стіни в протилежний нижній.',
+   why:'Дальня половина стіни здається вужчою, тому середину не міряємо лінійкою, а шукаємо діагоналями.',
+   err:'Діагональ іде з верхнього кута в протилежний нижній. Почни з помаранчевої точки і доведи до кута.',
+   targets:[seg('d1',g=>g.Lt,g=>g.Fb,'guide'),seg('d2',g=>g.Ft,g=>g.Lb,'guide')]},
+  {text:'Від точки, де перетнулися діагоналі, протягни вертикаль угору, вище стіни. Там буде гребінь даху.',
+   why:'Гребінь стоїть точно над серединою стіни, інакше дах буде кривий.',
+   err:'Веди від перетину діагоналей рівно вгору, вище за стіну.',
+   targets:[seg('cv',g=>g.c,g=>g.P,'guide',{free:true})]},
+  {text:'Зʼєднай гребінь із двома верхніми кутами лівої стіни. Вийде трикутник фронтону.',
+   why:'Фронтон: трикутна частина стіни під дахом.',
+   err:'Почни з гребеня (помаранчева точка) і доведи лінію до верхнього кута стіни.',
+   targets:[seg('p1',g=>g.P,g=>g.Ft,'solid'),seg('p2',g=>g.P,g=>g.Lt,'solid')]},
+  {text:'Протягни від гребеня допоміжну лінію до правої точки сходу.',
+   why:'Гребінь паралельний верху правої стіни, тому теж іде до правої точки сходу. Але де він закінчується? Зараз знайдемо.',
+   err:'Від гребеня веди до самої правої точки сходу.',
+   targets:[seg('rgg',g=>g.P,g=>g.vr,'guide')]},
+  {text:'Гребінь закінчується над серединою задньої стіни. Її не видно, тож знайдемо середину двома лініями: від дальнього верхнього кута правої стіни до лівої точки сходу і від середини верху лівої стіни до правої точки сходу.',
+   why:'Перша лінія: це верхній край задньої стіни. Друга: середня лінія «стелі» будинку. Там, де вони перетнуться, і є середина задньої стіни.',
+   err:'Почни з помаранчевої точки. Від кута правої стіни веди до лівої точки сходу, від середини лівої стіни до правої.',
+   targets:[seg('k1',g=>g.Rt,g=>g.vl,'guide'),seg('k2',g=>g.M1,g=>g.vr,'guide')]},
+  {text:'Від точки перетину протягни вертикаль угору до лінії гребеня. Там, де вона її перетне, гребінь закінчується.',
+   why:'Гребінь стоїть над серединою задньої стіни так само, як спереду стоїть над серединою лівої.',
+   err:'Веди від перетину двох нових ліній рівно вгору, до допоміжної лінії гребеня.',
+   targets:[seg('k3',g=>g.M2,g=>g.R2,'guide')]},
+  {text:'Обведи гребінь від верхівки до знайденої точки. Потім закрий дах: зʼєднай кінець гребеня з дальнім верхнім кутом правої стіни.',
+   why:'Тепер дах має два схили, і один з них нам видно.',
+   err:'Почни з помаранчевої точки: гребінь веди до знайденої точки, а від неї до кута правої стіни.',
+   done:'Дах готовий!',
+   targets:[seg('rg',g=>g.P,g=>g.R2,'solid'),seg('be',g=>g.R2,g=>g.Rt,'solid')]}
+ ]},
+ {t:'Вікна і двері',phases:[{
+   text:'Верх і низ кожного вікна, а ще верх дверей ведемо в бік тієї точки сходу, на яку дивиться стіна. Протягни від кожної помаранчевої точки: на правій стіні вправо, на лівій вліво.',
+   why:'Тому дальній край вікна виходить нижчим за ближній.',
+   err:'Почни з помаранчевої точки біля вікна і веди в бік точки сходу, на яку дивиться ця стіна.',
+   targets:[
+     seg('w1t',g=>wp(g,'w1',0,1),g=>wp(g,'w1',1,1),'solid',{free:true,extra:g=>[[wp(g,'w1',0,1),g.vr]]}),
+     seg('w1b',g=>wp(g,'w1',0,0),g=>wp(g,'w1',1,0),'solid',{free:true,extra:g=>[[wp(g,'w1',0,0),g.vr]]}),
+     seg('dt', g=>wp(g,'d',0,1), g=>wp(g,'d',1,1), 'solid',{free:true,extra:g=>[[wp(g,'d',0,1),g.vr]]}),
+     seg('w2t',g=>wp(g,'w2',0,1),g=>wp(g,'w2',1,1),'solid',{free:true,extra:g=>[[wp(g,'w2',0,1),g.vl]]}),
+     seg('w2b',g=>wp(g,'w2',0,0),g=>wp(g,'w2',1,0),'solid',{free:true,extra:g=>[[wp(g,'w2',0,0),g.vl]]})
+   ]},
+  {text:'Тепер бокові сторони: проведи вертикалі від кінців верхніх ліній униз. У вікон до нижньої лінії вікна, у дверей до низу стіни.',
+   why:'Бокові сторони вікон вертикальні, як і кути будинку.',
+   err:'Почни з помаранчевої точки і веди рівно вниз до нижньої лінії вікна або до низу стіни.',
+   done:'Вікна і двері на місці.',
+   targets:[
+     seg('w1l',g=>wp(g,'w1',0,1),g=>wp(g,'w1',0,0),'solid'),seg('w1r',g=>wp(g,'w1',1,1),g=>wp(g,'w1',1,0),'solid'),
+     seg('dl', g=>wp(g,'d',0,1), g=>wp(g,'d',0,0), 'solid'),seg('dr', g=>wp(g,'d',1,1), g=>wp(g,'d',1,0), 'solid'),
+     seg('w2l',g=>wp(g,'w2',0,1),g=>wp(g,'w2',0,0),'solid'),seg('w2r',g=>wp(g,'w2',1,1),g=>wp(g,'w2',1,0),'solid')
+   ]}]},
+ {t:'Прибираємо зайве',phases:[{
+   text:'Будинок побудовано. Допоміжні лінії вже зробили свою справу: сховай їх.',
+   why:'Художники будують легкими лініями, а наприкінці стирають зайве.',
+   targets:[{id:'clean',kind:'action',label:'Сховати допоміжні лінії'}]}]},
+ {t:'Колір',phases:[{
+   text:'Обери колір і торкнись частини малюнка: неба, землі, стін, даху, вікон, дверей. Кожна нова розфарбована частина дає бали. Коли закінчиш, натисни «Фініш».',
+   why:'Стіна в тіні темніша за освітлену. Так будинок виглядає ще обʼємнішим.',
+   fill:true,
+   targets:[{id:'fin',kind:'action',label:'Фініш'}]}]}
+];
+const REGIONS=['sky','ground','wallL','gable','wallR','roof','w1','w2','d'];
+
+function cur(){
+  for(let si=0;si<STEPS.length;si++){const ph=STEPS[si].phases;
+    for(let pi=0;pi<ph.length;pi++) if(ph[pi].targets.some(t=>!isDone(t.id))) return {si,pi,ph:ph[pi]};}
+  return null;
+}
+function phaseDone(ph){return ph.targets.every(t=>isDone(t.id))}
+function stepDone(si){return STEPS[si].phases.every(phaseDone)}
+function stars(si){if(!stepDone(si))return 0;const m=S.stepMist[si]||0;return m===0?3:m<=2?2:1}
+function totalStars(){let s=0;STEPS.forEach((_,i)=>s+=stars(i));return s}
+function secs(){if(!S.t0)return 0;return Math.round(((S.t1||Date.now())-S.t0)/1000)}
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function filledCount(){return new Set(S.done.filter(d=>d.id==='fill').map(d=>d.data.r)).size}
+function badges(){
+  return [
+    ['Снайпер','жодної помилки',S.t1&&S.mistakes===0],
+    ['Блискавка','швидше за 5 хвилин',S.t1&&secs()<300],
+    ['Серія 10','10 влучань підряд',S.bestStreak>=10],
+    ['Без підказок','жодної підказки',S.t1&&S.hints===0],
+    ['Художник','розфарбовано все',filledCount()>=REGIONS.length]
+  ];
+}
+
+function regions(g){
+  const q=(k)=>[wp(g,k,0,0),wp(g,k,1,0),wp(g,k,1,1),wp(g,k,0,1)];
+  return [
+    ['sky',[{x:0,y:0},{x:W,y:0},{x:W,y:g.H0},{x:0,y:g.H0}]],
+    ['ground',[{x:0,y:g.H0},{x:W,y:g.H0},{x:W,y:H},{x:0,y:H}]],
+    ['wallL',[g.Lb,g.Fb,g.Ft,g.Lt]],
+    ['gable',[g.Lt,g.P,g.Ft]],
+    ['wallR',[g.Fb,g.Rb,g.Rt,g.Ft]],
+    ['roof',[g.P,g.R2,g.Rt,g.Ft]],
+    ['w1',q('w1')],['w2',q('w2')],['d',q('d')]
+  ];
+}
+
+// ---------- rendering ----------
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e}
+function line(a,b,cls,parent){return el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:cls},parent)}
+
+function render(){
+  const g=geo(), c=cur(), D=new Set(S.done.map(d=>d.id));
+  const clean=D.has('clean') && !showBuild;
+  svg.innerHTML='';
+  const defs=el('defs',{});
+  const pat=el('pattern',{id:'grid',width:40,height:40,patternUnits:'userSpaceOnUse'},defs);
+  el('path',{d:'M40 0H0V40',fill:'none',stroke:'var(--grid)','stroke-width':1.2},pat);
+  el('rect',{x:0,y:0,width:W,height:H,fill:'var(--paper)'});
+  el('rect',{x:0,y:0,width:W,height:H,fill:'url(#grid)'});
+
+  const filling=c && c.ph.fill;
+  const fills={}; S.done.filter(d=>d.id==='fill').forEach(d=>fills[d.data.r]=d.data.c);
+  if(filling || Object.keys(fills).length){
+    for(const [r,pts] of regions(g)){
+      const p=el('polygon',{points:pts.map(p=>p.x+','+p.y).join(' '),fill:fills[r]||'transparent',class:filling?'region':''});
+      if(filling){p.style.pointerEvents='all';p.addEventListener('click',e=>fillRegion(r,ptOf(e)));}
+      else p.style.pointerEvents='none';
+    }
+  }
+  svg.classList.toggle('filling',!!filling);
+
+  const lines=el('g',{'pointer-events':'none'});
+  const L=(a,b,cls,id)=>line(a,b,cls+(id&&id===fresh?' fresh':''),lines);
+
+  if(D.has('hz')) L({x:0,y:g.H0},{x:W,y:g.H0},'ln-hz'+(clean?' faint':''),'hz');
+  if(D.has('hz') && !clean){const t=el('text',{x:W-14,y:g.H0-10,'text-anchor':'end',class:'lbl'},lines);t.textContent='лінія горизонту';}
+
+  STEPS.forEach(s=>s.phases.forEach(ph=>{
+    ph.targets.forEach(t=>{
+      if(t.kind!=='seg'||!D.has(t.id))return;
+      if(t.extra && !clean) t.extra(g).forEach(([a,b])=>L(a,b,'ln-guide'));
+      if(t.cls==='guide'){ if(!clean) L(t.a(g),t.b(g),'ln-guide',t.id); }
+      else L(t.a(g),t.b(g),'ln-solid',t.id);
+    });
+    if(ph.after && phaseDone(ph)) ph.after(g).forEach(([a,b])=>L(a,b,'ln-solid'));
+  }));
+  if(D.has('cn')) L(g.Ft,g.Fb,'ln-solid','cn');
+
+  if(!clean){
+    [['vl',g.vl,'start'],['vr',g.vr,'end']].forEach(([id,p,anc])=>{
+      if(!D.has(id))return;
+      el('circle',{cx:p.x,cy:p.y,r:id===fresh?11:8,class:'vp'},lines);
+      const t=el('text',{x:p.x+(anc==='start'?-4:4),y:p.y+30,'text-anchor':anc,class:'lbl'},lines);
+      t.textContent='точка сходу';
+    });
+  }
+
+  if(c){
+    const active=c.ph.targets.filter(t=>!D.has(t.id));
+    const hint=el('g',{'pointer-events':'none'});
+    active.forEach(t=>{
+      if(t.kind==='seg'){
+        if(showHint) line(t.a(g),t.b(g),'ghost',hint);
+        const a=t.a(g);
+        el('circle',{cx:a.x,cy:a.y,r:9,class:'ring'},hint);
+        el('circle',{cx:a.x,cy:a.y,r:7,class:'anchor'},hint);
+      } else if(showHint){
+        if(t.kind==='horizon') line({x:20,y:285},{x:W-20,y:285},'ghost',hint);
+        if(t.kind==='vp') el('circle',{cx:t.side<0?60:940,cy:g.H0,r:22,class:'ghostc'},hint);
+        if(t.kind==='corner') line({x:500,y:g.H0-80},{x:500,y:g.H0+140},'ghost',hint);
+      }
+    });
+  }
+  renderPanel(c);
+}
+
+function say(t,cls){const m=$('msg');m.className='msg';void m.offsetWidth;m.className='msg '+(cls||'');m.textContent=t;}
+function bump(id){const e=$(id);e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump');}
+
+function renderHud(){
+  $('hScore').textContent=S.score;
+  $('hStreak').textContent=S.streak?('×'+S.streak):'0';
+  $('tStreak').classList.toggle('hot',S.streak>=3);
+  $('hTime').textContent=fmt(secs());
+  $('whoName').textContent=name||'...';
+  const r=myRank();
+  $('tRank').hidden=!online;
+  $('hRank').textContent=r?r+' з '+board.length:'-';
+}
+function myRank(){const i=board.findIndex(b=>b.finished&&b.name.toLowerCase()===name.toLowerCase());return i<0?0:i+1}
+// ---------- class timer (set by the teacher on the projector page) ----------
+let round=null, clockOff=0, wasUp=false;
+function remaining(){return round?round.ends-(Date.now()+clockOff):null}
+function timeUp(){return !!round&&remaining()<=0}
+function tickRound(){
+  const r=remaining();
+  $('tRound').hidden=r===null;
+  if(r!==null){const s=Math.max(0,Math.ceil(r/1000));$('hRound').textContent=fmt(s);$('tRound').classList.toggle('warn',s<=60);}
+  const up=timeUp();
+  if(up&&!wasUp){wasUp=true;down=null;clearRubber();render();say('Час вийшов! Зараховуються лише завершені будинки.','err');}
+  if(!up&&wasUp){wasUp=false;render();}
+}
+
+function boardHtml(limit){
+  const rows=online?board:localBoard();
+  if(!rows.length) return '<p class="note">Поки що порожньо.</p>';
+  return '<div class="lb">'+rows.slice(0,limit).map((b,i)=>{
+    const me=b.name.toLowerCase()===name.toLowerCase();
+    return '<div class="'+(me?'me':'')+'"><span>'+(b.finished?(i+1)+'.':'')+'</span><span>'+esc(b.name)+(b.finished?'':' · малює')+'</span><span>'+(b.finished?b.score:'—')+'</span></div>';
+  }).join('')+'</div>';
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderPanel(c){
+  const ul=$('steps'); ul.innerHTML='';
+  STEPS.forEach((s,i)=>{const li=document.createElement('li');
+    const dn=stepDone(i);
+    li.className=dn?'done':(c&&c.si===i?'cur':'');
+    let st='';
+    if(dn){const n=stars(i);st=' <span class="st">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';}
+    li.innerHTML='<span class="n">'+(i+1)+'</span> '+s.t+st; ul.appendChild(li);});
+  const ex=$('extra'); ex.innerHTML='';
+  $('bHint').hidden=!c||c.ph.fill||c.ph.targets[0].kind==='action';
+  $('bHint').classList.toggle('on',showHint);
+  $('bHint').textContent=showHint?'Сховати підказку':'Підказка';
+  $('bUndo').disabled=!S.done.length||!!S.t1;
+  $('bReset').textContent=resetArm?'Точно? Бали обнуляться':'Почати спочатку';
+  $('bReset').classList.toggle('warn',resetArm);
+  $('bReset').disabled=timeUp();
+  renderHud();
+  if(!c){
+    const b=S.bonus||{time:0,stars:0};
+    $('eyebrow').textContent='Фініш';
+    $('title').textContent='Будинок стоїть у перспективі!';
+    $('task').innerHTML='Твій результат: <b>'+S.score+' балів</b> за '+fmt(secs())+'.';
+    $('why').textContent='Тепер намалюй так само в графічному редакторі. Назви файл так: Будинок, '+(name||'Прізвище Імʼя')+'. Акаунт у класу спільний, чужий файл не відкривай.';
+    ex.innerHTML=
+      '<div style="margin-bottom:12px">'+cardHtml(myCardIdx(),name||'Гравець')+'</div>'+
+      '<div class="sum">'+
+        '<div class="tile"><span>ЗІРКИ</span><b>'+totalStars()+' з '+STEPS.length*3+'</b></div>'+
+        '<div class="tile"><span>ПОМИЛКИ</span><b>'+S.mistakes+'</b></div>'+
+        '<div class="tile"><span>БОНУС ЗА ЗІРКИ</span><b>+'+b.stars+'</b></div>'+
+        '<div class="tile"><span>БОНУС ЗА ЧАС</span><b>+'+b.time+'</b></div>'+
+      '</div>'+
+      '<div class="badges" style="margin-top:10px">'+badges().map(([n,d,on])=>'<span class="badge'+(on?'':' off')+'" title="'+d+'">'+n+'</span>').join('')+'</div>'+
+      '<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><div class="lbh"><span>'+(online?'Рейтинг класу':'Мої спроби на цьому компʼютері')+'</span>'+(online&&myRank()?'<span>Ти '+myRank()+'-й</span>':'')+'</div>'+boardHtml(10)+
+      (online?'':'<p class="note">Рейтинг класу працює, коли апку відкрито з учительського ноутбука.</p>')+'</div>'+
+      '<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px"><p class="note">Наприкінці уроку перші три місця отримають колекційні картки і неоновий режим для малюнка. Ще є час покращити результат!</p>'+
+      '<div class="prizes"><span class="r1">1: Легендарна</span><span class="r2">2: Епічна</span><span class="r3">3: Рідкісна</span></div></div>';
+    const bx=document.createElement('div');bx.className='btns';bx.style.marginTop='12px';
+    const b2=document.createElement('button');b2.type='button';b2.className='primary';b2.textContent='Ще раз, на кращий результат';
+    b2.disabled=timeUp();
+    b2.onclick=()=>{S=newState();showBuild=false;showHint=false;save();say('Нова спроба. Спробуй інший горизонт чи інші точки сходу.','ok');render();sync();};
+    const b1=document.createElement('button');b1.type='button';b1.textContent=showBuild?'Сховати побудову':'Показати побудову';
+    b1.onclick=()=>{showBuild=!showBuild;render();};
+    bx.append(b2,b1);ex.appendChild(bx);
+    return;
+  }
+  if(timeUp()){
+    $('eyebrow').textContent='Таймер';
+    $('title').textContent='Час вийшов!';
+    $('task').textContent='Цей будинок не встиг до фінішу, тому в рейтинг не йде. Зараховуються лише завершені спроби.';
+    $('why').textContent='Подивись на рейтинг на проєкторі. Наступного разу почни одразу і не зупиняйся надовго на одному кроці.';
+    $('bHint').hidden=true; $('bUndo').disabled=true;
+    return;
+  }
+  const s=STEPS[c.si];
+  $('eyebrow').textContent='Крок '+(c.si+1)+' з '+STEPS.length+(s.phases.length>1?' · частина '+(c.pi+1)+' із '+s.phases.length:'');
+  $('title').textContent=s.t;
+  $('task').textContent=c.ph.text;
+  $('why').textContent=c.ph.why||'';
+  if(c.ph.fill){
+    const pal=document.createElement('div');pal.className='palette';
+    ['#bfe3f7','#ffd3a1','#9ccc7a','#d8c697','#f4dcaa','#d9a86c','#b77b4f','#aeb8c4','#b5523b','#6b4a3a','#8fd0f0','#fff2b3'].forEach(col=>{
+      const b=document.createElement('button');b.type='button';b.className='sw'+(col===selColor?' sel':'');b.style.background=col;b.setAttribute('aria-label','Колір '+col);
+      b.onclick=()=>{selColor=col;render();};pal.appendChild(b);});
+    ex.appendChild(pal);
+  }
+  const act=c.ph.targets.find(t=>t.kind==='action'&&!isDone(t.id));
+  if(act){const b=document.createElement('button');b.type='button';b.className='primary';b.textContent=act.label;
+    if(c.ph.fill) b.style.marginTop='12px';
+    b.onclick=()=>accept(act.id,{},null);ex.appendChild(b);}
+}
+
+// ---------- input ----------
+function ptOf(e){const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+function upp(){const w=svg.getBoundingClientRect().width||W;return W/w}
+function tol(){return Math.max(40,24*upp())}
+function activeSegs(){const c=cur();if(!c)return[];return c.ph.targets.filter(t=>t.kind==='seg'&&!isDone(t.id))}
+function snapStart(p){const g=geo();let best=null,bd=tol();
+  activeSegs().forEach(t=>{const a=t.a(g),d=dist(a,p);if(d<bd){bd=d;best=a}});return best}
+function angDeg(a,b){return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI}
+function angDiff(x,y){let d=Math.abs(x-y)%360;return d>180?360-d:d}
+
+function findMatch(u0,u1){
+  const g=geo(),T=tol(),ul=dist(u0,u1); let best=null,bs=1e9;
+  activeSegs().forEach(t=>{
+    const A=t.a(g),B=t.b(g),Lt=dist(A,B);
+    [[A,B,0],[B,A,1]].forEach(([a,b,rev])=>{
+      if(t.free&&rev)return;
+      const e0=dist(u0,a); if(e0>T)return;
+      let ok,sc;
+      if(t.free){const ad=angDiff(angDeg(u0,u1),angDeg(a,b)); ok=ad<=14&&ul>=0.5*Lt; sc=e0+ad*4;}
+      else{const e1=dist(u1,b); ok=e1<=T; sc=e0+e1;}
+      if(ok&&sc<bs){bs=sc;best=t}
+    });
+  });
+  return best;
+}
+
+let rubber=null;
+function drawRubber(a,b,hit){
+  if(!rubber||rubber.parentNode!==svg){rubber=line(a,b,'rubber');rubber.style.pointerEvents='none';}
+  rubber.setAttribute('x1',a.x);rubber.setAttribute('y1',a.y);rubber.setAttribute('x2',b.x);rubber.setAttribute('y2',b.y);
+  rubber.setAttribute('class','rubber'+(hit?' hit':''));
+}
+function clearRubber(){if(rubber&&rubber.parentNode)rubber.remove();rubber=null}
+
+svg.addEventListener('pointerdown',e=>{
+  const c=cur(); if(!c||c.ph.fill||!name) return;
+  if(timeUp()){say('Час вийшов! Зараховуються лише завершені будинки.','err');return}
+  e.preventDefault();
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+  const p=ptOf(e); down={raw:p,start:snapStart(p)||p};
+});
+svg.addEventListener('pointermove',e=>{
+  if(!down)return;
+  const c=cur(); if(!c)return;
+  const p=ptOf(e), k=c.ph.targets.find(t=>!isDone(t.id))?.kind;
+  if(dist(down.raw,p)<8*upp())return;
+  if(k==='seg'){const m=findMatch(down.start,p),g=geo();
+    if(m){const A=m.a(g),B=m.b(g);const rev=dist(down.start,A)>dist(down.start,B);
+      m.free?drawRubber(A,p,true):drawRubber(rev?B:A,rev?A:B,true);}
+    else drawRubber(down.start,p,false);}
+  else if(k==='horizon') drawRubber(down.raw,p,false);
+  else if(k==='corner') drawRubber(down.raw,p,false);
+});
+svg.addEventListener('pointerup',e=>{
+  if(!down)return; const p=ptOf(e), d=down; down=null; clearRubber();
+  const c=cur(); if(!c)return;
+  const isClick=dist(d.raw,p)<12*upp();
+  handle(c,d,p,isClick);
+});
+svg.addEventListener('pointercancel',()=>{down=null;clearRubber()});
+
+function handle(c,d,p,isClick){
+  const ts=c.ph.targets.filter(t=>!isDone(t.id));
+  const kind=ts[0].kind, g=geo();
+  if(kind==='action'){say('Натисни кнопку «'+ts[0].label+'» на панелі.','');return}
+  if(kind==='horizon'){
+    if(isClick){say('Натисни і протягни лінію через аркуш, не відпускаючи.','');return}
+    const a=Math.min(angDiff(angDeg(d.raw,p),0),angDiff(angDeg(d.raw,p),180));
+    if(a>20){fail(d.raw,p,'Лінія горизонту завжди рівна, без нахилу. Веди рівно вбік.',c.si);return}
+    if(dist(d.raw,p)<250){fail(d.raw,p,'Горизонт іде через увесь аркуш. Протягни лінію довшою.',c.si);return}
+    const y=(d.raw.y+p.y)/2, yy=clamp(Math.round(y),250,320);
+    accept('hz',{y:yy},{x:(d.raw.x+p.x)/2,y:yy}, yy!==Math.round(y)?'Горизонт став трохи '+(y<250?'нижче':'вище')+', щоб будинок помістився на аркуші.':null);
+    return;
+  }
+  if(kind==='vp'){
+    const side=p.x<W*0.4?-1:p.x>W*0.6?1:0;
+    if(!side){fail(null,null,'Точки сходу ставимо ближче до країв аркуша. Так будинок не буде спотвореним.',c.si);return}
+    const t=c.ph.targets.find(t=>t.side===side);
+    if(isDone(t.id)){say('Ця точка вже є. Постав другу з іншого боку.','err');return}
+    const x=side<0?clamp(Math.round(p.x),30,180):clamp(Math.round(p.x),820,970);
+    accept(t.id,{x},{x,y:g.H0});
+    return;
+  }
+  if(kind==='corner'){
+    if(isClick){say('Натисни і протягни вертикальну лінію згори вниз.','');return}
+    const a=Math.min(angDiff(angDeg(d.raw,p),90),angDiff(angDeg(d.raw,p),-90));
+    if(a>20){fail(d.raw,p,'Кут будинку завжди вертикальний: веди лінію прямо вниз.',c.si);return}
+    if(dist(d.raw,p)<120){fail(d.raw,p,'Кут має бути вищим. Протягни довшу лінію.',c.si);return}
+    const x=Math.round(clamp((d.raw.x+p.x)/2,Math.max(g.VL+320,420),Math.min(g.VR-320,580)));
+    accept('cn',{x},{x,y:g.H0-80});
+    return;
+  }
+  if(isClick){say('Натисни на помаранчеву точку і, не відпускаючи, веди лінію до кінця.','');return}
+  const m=findMatch(d.start,p);
+  if(m) accept(m.id,{},m.b(geo()));
+  else fail(d.start,p,c.ph.err||'Не туди. Подивись на підказку і спробуй ще.',c.si);
+}
+
+const OK=['Так!','Влучно!','Чудово!','Саме так!','Є!','Гарно!'];
+function award(key,base,pos){
+  if(S.scored.includes(key)) return 0;
+  S.scored.push(key);
+  if(!S.t0) S.t0=Date.now();
+  let pts=base;
+  if(base>=10){ S.streak++; S.bestStreak=Math.max(S.bestStreak,S.streak); pts+= (S.clean?5:0) + Math.min(S.streak,10); }
+  S.score+=pts; S.clean=true;
+  bump('hScore'); if(base>=10) bump('hStreak');
+  return pts;
+}
+function accept(id,data,pos,note){
+  if(timeUp())return;
+  const before=cur();
+  S.done.push({id,data}); fresh=id; showHint=false; resetArm=false;
+  const pts=award(id,10,pos);
+  let m=OK[Math.floor(Math.random()*OK.length)]+(pts?' +'+pts:'');
+  if(S.streak>=3&&pts) m+=' Серія ×'+S.streak+'!';
+  if(note) m+=' '+note;
+  const after=cur();
+  if(before && phaseDone(before.ph)){
+    if(before.ph.done) m=before.ph.done+(pts?' +'+pts:'');
+    if(after && after.si!==before.si){const n=stars(before.si);m+=' Крок '+(before.si+1)+': '+'★'.repeat(n)+'☆'.repeat(3-n);}
+  }
+  if(!after) finish();
+  else say(m,'ok');
+  save(); render(); sync();
+  const pid=id; setTimeout(()=>{if(fresh===pid)fresh=null},1000);
+  if(pos) floatPts(pos,pts?'+'+pts:'');
+}
+function fillRegion(r,pos){
+  if(timeUp())return;
+  S.done.push({id:'fill',data:{r,c:selColor}});
+  const pts=award('fill:'+r,3,null);
+  save(); render();
+  if(pts) floatPts(pos,'+'+pts);
+  say(pts?'Гарний колір! +'+pts:'Колір змінено.','ok');
+}
+function finish(){
+  S.t1=Date.now();
+  const sec=secs();
+  const bt=Math.max(0,Math.round((900-sec)/6)), bs=totalStars()*10;
+  S.bonus={time:bt,stars:bs}; S.score+=bt+bs;
+  ls.set(LKEY,JSON.stringify(localBoard().concat([{name,score:S.score,finished:true,time:sec}]).sort((a,b)=>b.score-a.score).slice(0,20)));
+  say('Фініш! Бонус за зірки +'+bs+', за час +'+bt+'.','ok');
+  confetti();
+}
+function fail(a,b,text,si){
+  S.mistakes++; S.streak=0; S.clean=false; S.stepMist[si]=(S.stepMist[si]||0)+1;
+  showHint=true; clearRubber(); save(); render(); sync();
+  say(text+' Пунктир підказує, де має бути лінія.','err');
+  if(a&&b){const l=line(a,b,'bad');l.style.pointerEvents='none';setTimeout(()=>l.remove(),1000);}
+}
+function floatPts(pos,txt){
+  if(!txt||!pos)return;
+  const t=el('text',{x:pos.x,y:pos.y-14,'text-anchor':'middle',class:'pts'});t.textContent=txt;
+  t.style.pointerEvents='none'; setTimeout(()=>t.remove(),1400);
+}
+
+$('bHint').onclick=()=>{showHint=!showHint; if(showHint){S.hints++;S.clean=false;save();} render();};
+$('bUndo').onclick=()=>{ if(!S.done.length||S.t1)return; const x=S.done.pop(); resetArm=false; showBuild=false; save(); say(x.id==='fill'?'Колір скасовано.':'Останню дію скасовано. Бали за неї лишаються, повторно їх не дають.',''); render(); };
+$('bReset').onclick=()=>{ if(!resetArm){resetArm=true;render();setTimeout(()=>{if(resetArm){resetArm=false;render();}},3500);return}
+  resetArm=false; S=newState(); showHint=false; showBuild=false; save(); say('Чистий аркуш. Почнімо з горизонту.',''); render(); sync(); };
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();$('bUndo').click();}});
+
+// ---------- name ----------
+function askName(){$('nameModal').hidden=false;$('nameIn').value=name;showShot();setTimeout(()=>$('nameIn').focus(),50);}
+$('bName').onclick=askName;
+$('nameForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=$('nameIn').value.replace(/\s+/g,' ').trim().slice(0,40);
+  if(v.length<2){$('nameIn').focus();return}
+  name=v; ls.set(NKEY,name); stopCam(); $('nameModal').hidden=true;
+  say('Привіт, '+name.split(' ')[0]+'! Перший крок: протягни лінію горизонту.','ok');
+  render(); sync();
+});
+
+// ---------- class leaderboard (only when served from the teacher laptop) ----------
+function localBoard(){try{const a=JSON.parse(ls.get(LKEY)||'[]');return Array.isArray(a)?a:[]}catch(_){return[]}}
+function stepNow(){const c=cur();return c?c.si:STEPS.length}
+function sync(){
+  if(!online||!name)return;
+  fetch('api/progress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    session:ls.get(SESSKEY),name,attempt:S.attempt,score:S.score,step:stepNow(),steps:STEPS.length,stars:totalStars(),
+    mistakes:S.mistakes,time:secs(),finished:!!S.t1,badges:badges().filter(b=>b[2]).map(b=>b[0])})})
+  .then(r=>r.json()).then(d=>{if(d&&d.stale){newClass(d.session);return}if(d&&Array.isArray(d.board)){onData(d);if(!cur())render();}}).catch(()=>{});
+}
+function poll(){
+  if(!online)return;
+  fetch('api/board').then(r=>r.json()).then(d=>{if(d&&Array.isArray(d.board))onData(d);}).catch(()=>{});
+}
+// the teacher cleared the board (new class): forget everything this browser remembers
+function newClass(sess){
+  [KEY,NKEY,SKEY,PKEY,NEONKEY,CKEY].forEach(k=>ls.del(k));
+  ls.set(SESSKEY,sess);
+  S=newState(); name=''; selfie=null; board=[]; showHint=false; showBuild=false; down=null;
+  stopCam(); $('cerModal').hidden=true; applyNeon(); render();
+  say('Новий клас! Напиши своє імʼя, щоб почати.','');
+  askName();
+}
+function onData(d){
+  if(d.session && d.session!==ls.get(SESSKEY)){newClass(d.session);return}
+  board=d.board;
+  if('round' in d){round=d.round; if(d.now) clockOff=d.now-Date.now(); tickRound();}
+  renderHud();
+  if(d.ceremony && d.ceremony.id!==ls.get(CKEY)) showCeremony(d.ceremony);
+}
+
+// ---------- prizes ----------
+const CKEY='house-persp-cer', PKEY='house-persp-prize', NEONKEY='house-persp-neon';
+const PRIZES=[
+  {cls:'r1',rar:'Легендарна',title:'Архітектор перспективи',aura:'+1000 аури'},
+  {cls:'r2',rar:'Епічна',title:'Майстер точок сходу',aura:'+700 аури'},
+  {cls:'r3',rar:'Рідкісна',title:'Повелитель горизонту',aura:'+500 аури'}];
+const COMMON={cls:'r0',rar:'Звичайна',title:'Юний архітектор',aura:'+100 аури'};
+function cardHtml(i,nm){const p=i<0?COMMON:PRIZES[i];
+  const mid=selfie
+    ? '<div class="pphoto" style="background-image:url('+selfie+')">'+(i>=0?'<span class="pplace">'+(i+1)+'</span>':'')+'</div>'
+    : '<div class="pnum">'+(i>=0?i+1:'★')+'</div>';
+  return '<div class="pcard '+p.cls+'"><div class="prar">'+p.rar+' картка</div>'+mid+'<div><div class="ptitle">'+p.title+'</div><div class="pname">'+esc(nm)+'</div></div><div class="paura">'+p.aura+'</div></div>';}
+function myCardIdx(){const v=ls.get(PKEY);return v===null?-1:Number(v)}
+
+// ---------- selfie: stays in this browser only ----------
+let selfie=null, stream=null;
+function showShot(){
+  const img=$('selfImg');
+  if(selfie){img.src=selfie;img.hidden=false;$('shotPh').hidden=true;}
+  else{img.hidden=true;$('shotPh').hidden=!!stream;}
+  $('bDropPh').hidden=!selfie;
+  $('bCam').textContent=selfie?'Перезняти':'Увімкнути камеру';
+}
+function camFallback(t){$('camNote').textContent=t;$('fileLbl').hidden=false;}
+function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}$('vid').hidden=true;$('bSnap').hidden=true;$('bCam').hidden=false;}
+function toSquare(src,w,h,mirror){
+  const c=document.createElement('canvas');c.width=c.height=320;const x=c.getContext('2d');const s=Math.min(w,h);
+  if(mirror){x.translate(320,0);x.scale(-1,1);}
+  x.drawImage(src,(w-s)/2,(h-s)/2,s,s,0,0,320,320);return c.toDataURL('image/jpeg',.82);
+}
+$('bCam').onclick=async()=>{
+  if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    camFallback('Камера на цій адресі недоступна. '+(location.protocol==='http:'?'Відкрий апку за адресою з https, яку показує вчитель, або ':'Можна ')+'обери фото з файлу.');return}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    const v=$('vid');v.srcObject=stream;v.hidden=false;$('selfImg').hidden=true;$('shotPh').hidden=true;await v.play();
+    $('bSnap').hidden=false;$('bCam').hidden=true;
+  }catch(e){stopCam();camFallback('Камеру не вдалося увімкнути. Можна обрати фото з файлу.')}
+};
+$('bSnap').onclick=()=>{const v=$('vid');if(!v.videoWidth)return;selfie=toSquare(v,v.videoWidth,v.videoHeight,true);ls.set(SKEY,selfie);stopCam();showShot();};
+$('fileIn').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const img=new Image();
+  img.onload=()=>{selfie=toSquare(img,img.naturalWidth,img.naturalHeight,false);ls.set(SKEY,selfie);URL.revokeObjectURL(img.src);showShot();};
+  img.src=URL.createObjectURL(f);};
+$('bDropPh').onclick=()=>{selfie=null;ls.del(SKEY);showShot();};
+function showCeremony(c){
+  ls.set(CKEY,c.id);
+  const me=c.top.findIndex(t=>t.name.toLowerCase()===name.toLowerCase());
+  const box=$('cerCard');
+  if(me>=0){
+    box.innerHTML='<h2>Вітаємо! '+(me+1)+' місце!</h2>'+cardHtml(me,name)+
+      '<p>Неоновий режим для малюнка розблоковано. Сфотографуй свою картку!</p>';
+    ls.set(PKEY,String(me)); ls.set(NEONKEY,'1');
+    setTimeout(confetti,400);
+  } else {
+    const r=myRank();
+    box.innerHTML='<h2>Переможці уроку</h2><div class="podium">'+c.top.map((t,i)=>'<div><span>'+(i+1)+'. '+esc(t.name)+'</span><span>'+PRIZES[i].rar+'</span></div>').join('')+'</div>'+
+      '<p>'+(r?'Твоє місце: '+r+'. ':'')+'Наступного разу картка може бути твоєю!</p>';
+  }
+  const b=document.createElement('button');b.type='button';b.className='primary';b.textContent=me>=0?'Забрати приз':'Закрити';
+  b.onclick=()=>{$('cerModal').hidden=true;applyNeon();};
+  box.appendChild(b);
+  $('cerModal').hidden=false;
+}
+function applyNeon(){
+  const unlocked=ls.get(PKEY)!==null;
+  $('bNeon').hidden=!unlocked;
+  const on=unlocked&&ls.get(NEONKEY)==='1';
+  svg.classList.toggle('neon',on);
+  $('bNeon').textContent=on?'Звичайний аркуш':'Неоновий режим';
+  $('bNeon').classList.toggle('on',on);
+}
+$('bNeon').onclick=()=>{ls.set(NEONKEY,ls.get(NEONKEY)==='1'?'0':'1');applyNeon();};
+function detect(){
+  if(!/^https?:$/.test(location.protocol))return;
+  const ctl=new AbortController();setTimeout(()=>ctl.abort(),2500);
+  fetch('api/ping',{signal:ctl.signal}).then(r=>r.ok?r.json():null).then(d=>{
+    if(d&&d.app==='house'){
+      online=true;
+      if(d.session && d.session!==ls.get(SESSKEY)) newClass(d.session);
+      sync();poll();setInterval(poll,3000);renderHud();
+    }
+  }).catch(()=>{});
+}
+
+// ---------- confetti ----------
+function confetti(){
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cv=$('fx');cv.hidden=false;const ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;ctx.scale(dpr,dpr);
+  const cols=['#e9752b','#3a78d6','#2b9a58','#d99a00','#8a5bd6','#d43f3f'];
+  const P=Array.from({length:160},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6+4,c:cols[Math.random()*cols.length|0],a:Math.random()*6,va:(Math.random()-.5)*.4}));
+  const t0=performance.now();
+  (function f(t){ctx.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore();});
+    if(t-t0<3200)requestAnimationFrame(f);else{ctx.clearRect(0,0,innerWidth,innerHeight);cv.hidden=true;}})(t0);
+}
+
+function save(){ls.set(KEY,JSON.stringify(S))}
+setInterval(()=>{if(S.t0&&!S.t1)$('hTime').textContent=fmt(secs());tickRound();},1000);
+
+function boot(data){
+  // a new school day on a shared computer: forget the previous student
+  const today=new Date().toISOString().slice(0,10);
+  if(ls.get(DKEY)!==today){[KEY,NKEY,SKEY,PKEY,NEONKEY,CKEY].forEach(k=>ls.del(k));ls.set(DKEY,today);}
+  selfie=ls.get(SKEY);
+  if(data && data.S) S=data.S;
+  else { try{const s=JSON.parse(ls.get(KEY)||'null'); if(s&&Array.isArray(s.done)) S=Object.assign(newState(),s);}catch(_){} }
+  name=(data&&data.name)||ls.get(NKEY)||'';
+  say(S.done.length?'Продовжуємо з того місця, де ти зупинився.':'Почнімо! Перший крок: лінія горизонту.','');
+  render();
+  applyNeon();
+  if(!name) askName();
+  detect();
+}
+window.claude?.hot?.snapshot?.(()=>({S,name}));
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+<p style="margin:24px 16px 20px;text-align:center;font:13px/1.5 Manrope,system-ui,sans-serif;opacity:.7"><a href="../../" style="color:inherit">Класні ігри</a> · © 2026 Юрій Падляк · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.uk" style="color:inherit" rel="license">CC BY-NC-SA 4.0</a> · продаж лише з дозволу автора</p>
+</html>

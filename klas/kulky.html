@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Кулькосвіт</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&display=swap">
+<style>
+:root{--bg:#5aa9e6;--bar:#3b2a1a;--bar2:#5a4330;--slot:#8b8b8b;--slot-hi:#fff;--ink:#fff;--muted:#d9e6f2;--gold:#ffcf3f;
+  --t0:#2fbf4f;--t1:#e5403a;
+  --f:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--fd:"Unbounded",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--f);font-weight:700;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* ---------- avatar picker */
+#pick{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:16px;
+  background:linear-gradient(#79c3ff,#cdeeff 70%,#6cbf3f 70%,#6cbf3f 74%,#8a6240 74%)}
+#pick h1{margin:0;font-family:var(--fd);font-weight:900;font-size:clamp(2rem,8vw,4.5rem);letter-spacing:.04em;color:#fff;
+  text-shadow:4px 4px 0 #2d6b1f,-2px -2px 0 #2d6b1f,2px -2px 0 #2d6b1f,-2px 2px 0 #2d6b1f}
+.avs{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(8px,2vw,18px);max-width:min(900px,100%)}
+@media (max-aspect-ratio:1/1){.avs{grid-template-columns:repeat(4,1fr)}}
+.av{width:clamp(64px,13vw,120px);aspect-ratio:1;border:0;padding:10%;background:#00000030;border-radius:6px;
+  box-shadow:inset -4px -4px 0 #0003,inset 4px 4px 0 #fff4;transition:transform .12s}
+.av:active,.av.on{transform:scale(1.12)}
+.av canvas{width:100%;height:100%;image-rendering:pixelated;display:block}
+.hand{font-size:clamp(2rem,6vw,3.5rem);animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px)}}
+
+/* ---------- game */
+#game{position:fixed;inset:0;display:flex;flex-direction:column}
+#top{display:none}
+#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#2b1d12;position:relative}
+#world,#world3{display:block;touch-action:none;box-shadow:0 0 0 4px #000}
+#world{image-rendering:pixelated}
+#bar{display:flex;justify-content:center;align-items:center;gap:clamp(4px,1.2vw,12px);padding:10px 10px calc(10px + env(safe-area-inset-bottom));
+  background:var(--bar);border-top:4px solid #000}
+.tool{--t:clamp(48px,min(10.5vw,12vh),86px);flex:none;width:var(--t);height:var(--t);border:4px solid #000;background:var(--slot);padding:calc(var(--t) * .1);position:relative;
+  box-shadow:inset -4px -4px 0 #555,inset 4px 4px 0 #c6c6c6;border-radius:2px}
+.tool canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+.tool.on{outline:5px solid var(--slot-hi);outline-offset:1px;transform:translateY(-6px)}
+.me{position:absolute;left:10px;top:10px;width:clamp(48px,7vw,70px);aspect-ratio:1;border:5px solid #000;background:#ffffff55;padding:4px;border-radius:4px;z-index:3}
+.me canvas{width:100%;height:100%;image-rendering:pixelated;display:block}
+.me.t0{border-color:var(--t0);background:#2fbf4f66}.me.t1{border-color:var(--t1);background:#e5403a66}
+.me .tag{position:absolute;right:-14px;bottom:-14px;font-size:clamp(20px,3vw,30px);filter:drop-shadow(0 2px 0 #000)}
+.view{position:absolute;right:10px;top:10px;z-index:3;border:3px solid #000;background:var(--bar2);padding:6px 10px;font-size:clamp(14px,2vw,20px);font-weight:700;
+  box-shadow:inset -3px -3px 0 #0005,inset 3px 3px 0 #fff2}
+.net{position:absolute;right:12px;bottom:12px;width:18px;height:18px;border-radius:50%;background:#e53935;border:3px solid #000;z-index:3}
+.net.ok{display:none}
+#hint{position:absolute;left:50%;top:22%;font-size:clamp(3rem,9vw,6rem);transform:translateX(-50%);pointer-events:none;animation:bob 1s ease-in-out infinite;z-index:2}
+
+/* HUD: level stars, chest progress, sand clock */
+#hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:clamp(8px,1.6vw,18px);align-items:center;z-index:3;
+  background:#000b;border:3px solid #000;padding:6px 14px;border-radius:8px;pointer-events:none;max-width:calc(100% - 170px);flex-wrap:wrap;justify-content:center}
+#hud .stars{display:flex;gap:2px;font-size:clamp(16px,2.4vw,28px);line-height:1}
+#hud .stars span{filter:grayscale(1) brightness(.55);opacity:.7}
+#hud .stars span.done{filter:none;opacity:1}
+#hud .stars span.now{filter:none;opacity:1;animation:pulse 1s ease-in-out infinite;display:inline-block}
+@keyframes pulse{50%{transform:scale(1.35)}}
+#hud .ic{font-size:clamp(18px,2.6vw,30px)}
+#hud .barbox{display:flex;align-items:center;gap:6px}
+#hud .bar{width:clamp(100px,17vw,260px);height:clamp(22px,3vw,34px);background:#3b2a1a;border:3px solid #000;position:relative;overflow:hidden;border-radius:4px}
+#hud .bar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#ff4d4d,#ffb84d,#fff04d,#5ee35e,#4dc3ff,#a64dff);transition:width .25s}
+#hud .bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(14px,2vw,22px);font-weight:800;
+  text-shadow:0 0 3px #000,1px 1px 0 #000,-1px -1px 0 #000;font-variant-numeric:tabular-nums}
+#hud .bar.t{width:clamp(64px,8vw,120px)}
+#hud .bar.t i{background:#ffd54f;transition:none}
+#hud .bar.t.low i{background:#ff5252}
+#hud .wait{font-size:clamp(14px,2vw,22px)}
+
+/* banners: team reveal, results */
+#banner{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:15;background:#0007;pointer-events:none}
+#banner .in{background:var(--c,#333);border:6px solid #000;box-shadow:inset -8px -8px 0 #0004,inset 8px 8px 0 #fff3;padding:3vh 5vw;text-align:center;
+  animation:pop .35s cubic-bezier(.3,1.6,.5,1);max-width:92vw}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+#banner .big{font-size:min(22vw,22vh);line-height:1}
+#banner .row{display:flex;align-items:center;justify-content:center;gap:3vw}
+#banner canvas{width:min(20vw,20vh);height:min(20vw,20vh);image-rendering:pixelated}
+#banner h2{margin:1vh 0 0;font-family:var(--fd);font-size:clamp(1.6rem,6vw,4rem);text-shadow:3px 3px 0 #000}
+#banner p{margin:.5vh 0 0;font-size:clamp(1rem,3vw,2rem);text-shadow:2px 2px 0 #000}
+
+#freeze{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;gap:6vw;z-index:20;font-size:min(28vw,40vh)}
+#freeze span{animation:bob 1.2s ease-in-out infinite}
+#freeze span+span{animation-delay:.3s}
+
+/* ---------- board (projector) */
+body.board #top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 16px;background:var(--bar);border-bottom:4px solid #000}
+.join{font-size:clamp(1.1rem,2.4vw,2rem);font-weight:800;letter-spacing:.02em}
+.join small{display:block;font-size:.5em;color:var(--muted);font-weight:500}
+.tbtns{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.tbtns button{background:var(--bar2);border:3px solid #000;padding:7px 10px;font-size:.95rem;box-shadow:inset -3px -3px 0 #0005,inset 3px 3px 0 #fff2}
+.tbtns button.go{background:#2e7d32}
+.tbtns button.on{background:#d84315}
+.teams{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;width:100%;min-height:34px;font-size:1.1rem}
+.team{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 8px;border:3px solid #000;border-radius:4px}
+.team.t0{background:#2fbf4f55}.team.t1{background:#e5403a55}
+.team canvas{width:28px;height:28px;image-rendering:pixelated}
+.teams .info{color:var(--muted);font-size:1rem}
+body.board .tool{--t:clamp(44px,min(5.5vw,8vh),70px)}
+body.board #bar{padding:6px}
+</style>
+</head>
+<body>
+<section id="pick" hidden>
+  <h1>КУЛЬКОСВІТ</h1>
+  <div class="avs" id="avs"></div>
+  <div class="hand" aria-hidden="true">👆</div>
+</section>
+
+<section id="game" hidden>
+  <div id="top">
+    <div class="join"><small>Заходьте в браузері:</small><span id="joinUrl"></span></div>
+    <div class="tbtns" id="tbtns" hidden>
+      <button data-a="start" class="go" id="bStart">▶ Почати гру</button>
+      <button data-a="next">⏭ Наступний рівень</button>
+      <button data-a="shuffle">🔀 Перемішати команди</button>
+      <button data-a="freeze" id="bFreeze">✋ Завмерли</button>
+      <button data-a="mute" id="bMute">🔊 Звук на планшетах</button>
+      <button data-a="clear">🧹 Прибрати кульки</button>
+      <button data-a="party">🎉 Свято</button>
+      <button data-a="newclass">🆕 Новий клас</button>
+    </div>
+    <div class="teams" id="teams"></div>
+  </div>
+  <div id="stage">
+    <div id="hud">
+      <div class="stars" id="stars" title="Рівні"></div>
+      <div class="barbox" id="goalBox"><span class="ic">🧺</span><div class="bar"><i id="goalFill"></i><span id="goalTxt"></span></div></div>
+      <div class="barbox" id="timeBox"><span class="ic">⏳</span><div class="bar t" id="timeBar"><i id="timeFill"></i><span id="timeTxt"></span></div></div>
+      <div class="wait" id="waitBox"></div>
+    </div>
+    <button class="me" id="meBtn" aria-label="Змінити звірятко"><canvas id="meIcon" width="10" height="10"></canvas><span class="tag" id="meTag"></span></button>
+    <button class="view" id="viewBtn" hidden>2D</button>
+    <div class="net" id="net" title="Немає зв'язку з вчительським ноутбуком"></div>
+    <canvas id="world"></canvas>
+    <canvas id="world3" hidden></canvas>
+    <div id="hint" hidden>👆</div>
+  </div>
+  <div id="bar"></div>
+</section>
+<div id="banner" hidden><div class="in" id="bnIn"></div></div>
+<div id="freeze" hidden><span>✋</span><span>✋</span></div>
+
+<script>
+/*MODE*/
+(() => {
+"use strict";
+const MODE = window.MODE || "kid";
+const BOARD = MODE === "board";
+const TEACHER = !!window.TEACHER && BOARD;
+const W = 48, H = 27, R = 0.42, SKY = 3; // balls are born in the top SKY rows (same as the server)
+const LS = "kulky.";
+const store = {
+  get(k) { try { return localStorage.getItem(LS + k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(LS + k, v); } catch (e) {} },
+};
+if (BOARD) document.body.classList.add("board");
+const TEAM = [
+  { name: "Збирачі", icon: "🧺", color: "#2fbf4f", tools: ["b", "G", "W", "J", "d"], say: "Кидай кульки в скриню!" },
+  { name: "Заважайки", icon: "🧱", color: "#e5403a", tools: ["S", "A", "T", "d"], say: "Не дай їм наповнити скриню, поки ⏳ не скінчиться!" },
+];
+const ALL_TOOLS = ["b", "G", "S", "W", "J", "A", "T", "d"];
+
+// ------------------------------------------------------------ art
+const COLORS = ["#e53935", "#fb8c00", "#fdd835", "#9ccc65", "#2e9e4f", "#26c6da", "#1e88e5", "#8e44c9",
+                "#f48fb1", "#8d5a3b", "#f5f5f5", "#37474f", "rainbow"];
+const PAL = { k: "#1a1a1a", w: "#ffffff", p: "#f8a5c2", o: "#ff9800", y: "#ffe14d", r: "#e53935", g: "#7a7a7a", s: "#ffcc99", n: "#6d4c2f" };
+const SPRITES = [
+  { a: "#e53935", rows: ["..k....k..", "...k..k...", "..kkkkkk..", ".kwkkkkwk.", ".kkkkkkkk.", "aaaakkaaaa", "akaakkaaka", "aaaakkakaa", "akaakkaaaa", ".aaakkaaa."] }, // ladybug
+  { a: "#fb8c00", rows: ["a........a", "aw......wa", "aaaaaaaaaa", "aaaaaaaaaa", "akkaaaakka", "akwaaaakwa", "wwaaaaaaww", ".wwwkkwww.", "..wwwwww..", "...wwww..."] }, // fox
+  { a: "#fdd835", rows: ["....aa....", "...aa.....", ".aaaaaaaa.", "aaaaaaaaaa", "akkaaaakka", "akwaaaakwa", "aaaaooaaaa", "aaaooooaaa", "aaaaooaaaa", ".aaaaaaaa."] }, // chick
+  { a: "#9ccc65", b: "#558b2f", rows: ["..b..b..b.", ".aaaaaaaa.", "aaaaaaaaaa", "akkaaaaaaa", "akwaaaaaaa", "aaaaaaaaaa", "aaaaaaaaaa", "awawawawaa", "aaaaaaaaaa", ".aaaaaaaa."] }, // dino
+  { a: "#2e9e4f", rows: [".www..www.", ".wkk..wkk.", ".wkk..wkk.", "aaaaaaaaaa", "aaaaaaaaaa", "aaaaaaaaaa", "akaaaaaaka", "aakkkkkkaa", "aaaaaaaaaa", ".aaaaaaaa."] }, // frog
+  { a: "#26c6da", b: "#90a4ae", rows: ["....r.....", "....b.....", "bbbbbbbbbb", "baaaaaaaab", "bawwaawwab", "bawkaawkab", "baaaaaaaab", "baykykykab", "baaaaaaaab", "bbbbbbbbbb"] }, // robot
+  { a: "#1e88e5", rows: ["a........a", "aa......aa", "aaaaaaaaaa", "aaaaaaaaaa", "akkaaaakka", "akwaaaakwa", "aaaappaaaa", "kaaakkaaak", "aaaaaaaaaa", ".aaaaaaaa."] }, // cat
+  { a: "#8e44c9", b: "#d1a6f0", rows: ["a........a", "aa......aa", "aaaaaaaaaa", "awwwaawwwa", "awkwaawkwa", "awwwaawwwa", "aaaaooaaaa", "abaaooaaba", "abbbbbbbba", ".bbbbbbbb."] }, // owl
+  { a: "#f48fb1", b: "#d9578b", rows: [".aa....aa.", "aaaa..aaaa", "aaaaaaaaaa", "aaaaaaaaaa", "akkaaaakka", "aaaaaaaaaa", "aaabbbbaaa", "aaabkkbaaa", "aaabbbbaaa", ".aaaaaaaa."] }, // pig
+  { a: "#8d5a3b", b: "#d7a77a", rows: ["aa......aa", "abaaaaaaba", "aaaaaaaaaa", "aaaaaaaaaa", "akkaaaakka", "aaaaaaaaaa", "aaabbbbaaa", "aaabkkbaaa", "aaaabbaaaa", ".aaaaaaaa."] }, // bear
+  { a: "#f5f5f5", rows: ["kk......kk", "kkaaaaaakk", "aaaaaaaaaa", "akkkaakkka", "akwkaakwka", "akkkaakkka", "aaaaaaaaaa", "aaaakkaaaa", "aaaaaaaaaa", ".aaaaaaaa."] }, // panda
+  { a: "#37474f", rows: [".aaaaaaaa.", "aaaaaaaaaa", "aawwaawwaa", "awkwwwwkwa", "awwwwwwwwa", "awwwoowwwa", "awwwoowwwa", "aawwwwwwaa", "aaaaaaaaaa", ".aaaaaaaa."] }, // penguin
+  { a: "#ffcc99", rows: ["y.y.yy.y.y", "yyyyyyyyyy", "yryyyyyryy", "aaaaaaaaaa", "akkaaaakka", "aaaaaaaaaa", "apaaaaaapa", "aakaaaakaa", "aaakkkkaaa", ".aaaaaaaa."] }, // teacher
+];
+const spriteCache = {};
+function sprite(i, team) { // 10x10 face, or 12x12 with a team-coloured frame
+  const key = i + ":" + (team ?? "");
+  if (spriteCache[key]) return spriteCache[key];
+  const framed = team === 0 || team === 1, o = framed ? 1 : 0;
+  const c = document.createElement("canvas"); c.width = c.height = 10 + 2 * o;
+  const x = c.getContext("2d"), s = SPRITES[i];
+  if (framed) { x.fillStyle = TEAM[team].color; x.fillRect(0, 0, 12, 12); x.fillStyle = "#fff"; x.fillRect(1, 1, 10, 10); }
+  s.rows.forEach((row, j) => [...row].forEach((ch, k) => {
+    if (ch === ".") return;
+    x.fillStyle = ch === "a" ? s.a : ch === "b" ? s.b : PAL[ch];
+    x.fillRect(k + o, j + o, 1, 1);
+  }));
+  return (spriteCache[key] = c);
+}
+function drawSprite(canvas, i, team) {
+  const x = canvas.getContext("2d"); x.imageSmoothingEnabled = false;
+  x.clearRect(0, 0, canvas.width, canvas.height); x.drawImage(sprite(i, team), 0, 0, canvas.width, canvas.height);
+}
+
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const TEX = {};
+function texture(ch) {
+  if (TEX[ch]) return TEX[ch];
+  const c = document.createElement("canvas"); c.width = c.height = 16;
+  const x = c.getContext("2d"), r = rng(ch.charCodeAt(0) * 7919);
+  const px = (i, j, col) => { x.fillStyle = col; x.fillRect(i, j, 1, 1); };
+  const pick = a => a[Math.floor(r() * a.length)];
+  const fill = cols => { for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) px(i, j, pick(cols)); };
+  const DIRT = ["#866043", "#79553a", "#966c4a", "#6b4a33", "#8a6446"];
+  switch (ch) {
+    case "D": fill(DIRT); break;
+    case "G": {
+      fill(DIRT);
+      for (let i = 0; i < 16; i++) {
+        const h = 3 + Math.floor(r() * 2.4);
+        for (let j = 0; j < h; j++) px(i, j, pick(["#5fa83a", "#6cbf3f", "#549a33", "#79c94a"]));
+      }
+      break;
+    }
+    case "g": fill(["#5fa83a", "#6cbf3f", "#549a33", "#79c94a"]); break; // grass top (3D)
+    case "S": fill(["#8a8a8a", "#7d7d7d", "#969696", "#7a7a7a", "#8f8f8f"]);
+      for (let n = 0; n < 7; n++) { const i = Math.floor(r() * 14), j = Math.floor(r() * 15); px(i, j, "#5f5f5f"); px(i + 1, j, "#6a6a6a"); }
+      break;
+    case "B": fill(["#2b2b2b", "#4a4a4a", "#3a3a3a", "#5c5c5c", "#1d1d1d"]); break;
+    case "W": {
+      const base = ["#b8945f", "#a7834f", "#c29f68", "#af8b57"];
+      for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) px(i, j, j % 4 === 3 ? "#6b4f2a" : pick(base));
+      for (let j = 0; j < 4; j++) { const s = (j * 7 + 3) % 16; for (let k = 0; k < 3; k++) px(s, j * 4 + k, "#7d5c33"); }
+      break;
+    }
+    case "L":
+      for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) if (r() > 0.12) px(i, j, pick(["#2e7d32", "#388e3c", "#1b5e20", "#43a047"]));
+      break;
+    case "J":
+      x.fillStyle = "rgba(110,214,80,.82)"; x.fillRect(0, 0, 16, 16);
+      x.fillStyle = "rgba(60,150,40,.95)"; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillRect(0, 0, 1, 16); x.fillRect(15, 0, 1, 16);
+      x.fillStyle = "rgba(170,240,140,.9)"; x.fillRect(4, 4, 8, 8);
+      x.fillStyle = "rgba(90,190,60,.95)"; x.fillRect(4, 4, 8, 1); x.fillRect(4, 11, 8, 1); x.fillRect(4, 4, 1, 8); x.fillRect(11, 4, 1, 8);
+      px(6, 6, "#fff"); px(7, 6, "#fff"); px(6, 7, "#fff");
+      break;
+    case "A":
+      x.fillStyle = "rgba(205,238,255,.28)"; x.fillRect(0, 0, 16, 16);
+      x.fillStyle = "rgba(255,255,255,.95)"; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillRect(0, 0, 1, 16); x.fillRect(15, 0, 1, 16);
+      for (let k = 0; k < 4; k++) { px(3 + k, 7 - k, "rgba(255,255,255,.85)"); px(9 + k, 12 - k, "rgba(255,255,255,.7)"); }
+      break;
+    case "T": {
+      for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) px(i, j, (i % 4 < 2) ? "#db3b2f" : "#b8261c");
+      x.fillStyle = "#eeeeee"; x.fillRect(0, 5, 16, 6);
+      const L = { T: ["###", ".#.", ".#.", ".#."], N: ["#.#", "###", "###", "#.#"] };
+      ["T", "N", "T"].forEach((ch2, n) => L[ch2].forEach((row, j) => [...row].forEach((v, i) => v === "#" && px(2 + n * 4 + i, 6 + j, "#1a1a1a"))));
+      break;
+    }
+    default: fill(["#ff00ff"]);
+  }
+  return (TEX[ch] = c);
+}
+const PICKAXE = ["...cccc...", ".cc.nn.cc.", "c...nn...c", "....nn....", "....nn....", "....nn....", "....nn....", "....nn...."];
+function toolIcon(canvas, t, myCol) {
+  const x = canvas.getContext("2d"); x.imageSmoothingEnabled = false;
+  const S = canvas.width; x.clearRect(0, 0, S, S);
+  if (t === "b") {
+    [[.34, .62, .26], [.68, .62, .26], [.51, .32, .26]].forEach(([cx, cy, rr]) => {
+      x.drawImage(ballSprite(myCol, 64), (cx - rr) * S, (cy - rr) * S, rr * 2 * S, rr * 2 * S);
+    });
+  } else if (t === "d") {
+    x.save(); x.translate(S / 2, S / 2); x.rotate(-Math.PI / 4); const u = S / 11;
+    PICKAXE.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === ".") return;
+      x.fillStyle = ch === "c" ? "#5fd3e0" : "#7a5230"; x.fillRect((i - 5) * u, (j - 4) * u, u + .5, u + .5); }));
+    x.restore();
+  } else {
+    x.drawImage(texture(t), 0, 0, S, S);
+  }
+}
+const ballCache = {};
+function ballSprite(col, size) {
+  const key = col + "@" + size;
+  if (ballCache[key]) return ballCache[key];
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  const x = c.getContext("2d"), m = size / 2;
+  let base = col;
+  if (col === "rainbow") {
+    const g = x.createConicGradient ? x.createConicGradient(0, m, m) : null;
+    if (g) { ["#ff4d4d", "#ffb84d", "#fff04d", "#5ee35e", "#4dc3ff", "#a64dff", "#ff4d4d"].forEach((h, i) => g.addColorStop(i / 6, h)); base = g; }
+    else base = "#ff66cc";
+  }
+  x.beginPath(); x.arc(m, m, m - 1, 0, Math.PI * 2); x.fillStyle = base; x.fill();
+  const sh = x.createRadialGradient(m * .7, m * .6, m * .1, m, m, m);
+  sh.addColorStop(0, "rgba(255,255,255,.55)"); sh.addColorStop(.45, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(0,0,0,.35)");
+  x.fillStyle = sh; x.fill();
+  x.lineWidth = Math.max(1, size / 18); x.strokeStyle = "rgba(0,0,0,.45)"; x.stroke();
+  x.fillStyle = "rgba(255,255,255,.9)"; x.beginPath(); x.arc(m * .68, m * .58, m * .16, 0, Math.PI * 2); x.fill();
+  return (ballCache[key] = c);
+}
+function chestCanvas(wTiles, hTiles) {
+  const c = document.createElement("canvas"), u = 16; c.width = wTiles * u; c.height = hTiles * u;
+  drawChest(c.getContext("2d"), 0, 0, c.width, c.height, u / 8); return c;
+}
+function drawChest(x, X, Y, Wd, Hd, u) {
+  x.fillStyle = "#5c3a16"; x.fillRect(X, Y, Wd, Hd);
+  x.fillStyle = "#a8692c"; x.fillRect(X + u, Y + u, Wd - 2 * u, Hd * .38 - u); x.fillRect(X + u, Y + Hd * .42, Wd - 2 * u, Hd * .58 - u);
+  x.fillStyle = "#c07f3c"; for (let k = 1; k < 4; k++) x.fillRect(X + u, Y + Hd * .42 + k * Hd * .14, Wd - 2 * u, u * .6);
+  x.fillStyle = "#ffcf3f"; x.fillRect(X + Wd / 2 - u * 2, Y + Hd * .3, u * 4, u * 5);
+  x.fillStyle = "#1a1a1a"; x.fillRect(X + Wd / 2 - u * .6, Y + Hd * .3 + u * 2, u * 1.2, u * 2);
+}
+
+// ------------------------------------------------------------ sound
+let actx = null, soundOn = true;
+function audio() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (actx.state === "suspended") actx.resume();
+  return actx;
+}
+function tone(f0, f1, dur, type = "sine", vol = .18, delay = 0) {
+  const a = actx; if (!a || !soundOn) return;
+  const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+}
+function noise(dur, freq, vol = .25) {
+  const a = actx; if (!a || !soundOn) return;
+  const n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = "lowpass"; f.frequency.value = freq; g.gain.value = vol; s.buffer = buf;
+  s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  pop() { const f = 500 + Math.random() * 400; tone(f, f * .5, .09, "sine", .2); },
+  place() { noise(.07, 900, .35); tone(180, 120, .06, "square", .05); },
+  dig() { noise(.12, 1800, .25); },
+  boom() { noise(.9, 400, .5); tone(90, 30, .6, "sine", .35); },
+  ding() { tone(1046, 1046, .12, "triangle", .14); tone(1568, 1568, .2, "triangle", .1, .08); },
+  party() { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => tone(f, f, .16, "square", .07, i * .11)); },
+  sad() { [392, 370, 349, 262].forEach((f, i) => tone(f, f * .97, i === 3 ? .5 : .25, "triangle", .12, i * .28)); },
+  beep(hi) { tone(hi ? 1320 : 660, hi ? 1320 : 660, hi ? .35 : .12, "square", .07); },
+};
+
+// ------------------------------------------------------------ state
+let pid = store.get("pid");
+if (!pid) { pid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36).slice(-4); store.set("pid", pid); }
+let myAv = BOARD && TEACHER ? 12 : parseInt(store.get("av") ?? "-1", 10);
+let mySS = store.get("ss") || "";
+let myN = -1, myTeam = null;
+let tool = store.get("tool") || "b";
+let serverSS = null;
+let grid = null, gridVer = -1, localGrid = null, viewVer = 0; // viewVer bumps on any local or server change
+const balls = new Map(); // id -> {fx, fy, tx, ty, t0, c}
+let st = { k: 0, goal: 40, lv: 0, nl: 5, st: "ready", tl: null, tt: 1, tm: [], fz: false, mu: false, p: [], fuse: [], rk: [], n: 0 };
+let stAt = 0;
+let joined = false;
+let lastFrameAt = 0;
+
+const $ = id => document.getElementById(id);
+const pickEl = $("pick"), gameEl = $("game"), canvas = $("world"), ctx = canvas.getContext("2d"), canvas3 = $("world3");
+
+// ------------------------------------------------------------ picker
+function buildPicker() {
+  const box = $("avs"); box.innerHTML = "";
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement("button"); b.className = "av"; b.setAttribute("aria-label", "Звірятко " + (i + 1));
+    const c = document.createElement("canvas"); c.width = c.height = 10; drawSprite(c, i); b.appendChild(c);
+    b.onclick = () => { audio(); b.classList.add("on"); tone(660, 990, .15, "square", .08); setTimeout(() => choose(i), 160); };
+    box.appendChild(b);
+  }
+}
+function choose(i) { myAv = i; store.set("av", String(i)); join(); }
+function showPicker() { joined = false; gameEl.hidden = true; pickEl.hidden = false; $("banner").hidden = true; buildPicker(); }
+function showGame() {
+  const first = gameEl.hidden;
+  pickEl.hidden = true; gameEl.hidden = false;
+  setTeam(myTeam, true);
+  if (first) { resize(); if (!BOARD) { $("hint").hidden = false; } }
+}
+async function join() {
+  try {
+    const r = await fetch("/api/join", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pid, av: myAv, session: serverSS }) });
+    const d = await r.json();
+    myN = d.n; mySS = d.session; store.set("ss", mySS); joined = true; myTeam = d.team ?? null; showGame();
+  } catch (e) { setTimeout(join, 1500); }
+}
+$("meBtn").onclick = () => { if (!BOARD) showPicker(); };
+
+// ------------------------------------------------------------ team + toolbar
+let barKey = "";
+function setTeam(t, force) {
+  myTeam = (t === 0 || t === 1) ? t : null;
+  drawSprite($("meIcon"), myAv);
+  $("meBtn").className = "me" + (myTeam === null ? "" : " t" + myTeam);
+  $("meTag").textContent = myTeam === null ? "" : TEAM[myTeam].icon;
+  const tools = myAv === 12 || myTeam === null ? ALL_TOOLS : TEAM[myTeam].tools;
+  const key = tools.join("") + myAv;
+  if (key === barKey && !force) return;
+  barKey = key;
+  if (!tools.includes(tool)) tool = tools[0];
+  const bar = $("bar"); bar.innerHTML = "";
+  for (const t of tools) {
+    const b = document.createElement("button"); b.className = "tool" + (t === tool ? " on" : "");
+    b.setAttribute("aria-label", t);
+    const c = document.createElement("canvas"); c.width = c.height = 64; toolIcon(c, t, COLORS[myAv] || "#fff"); b.appendChild(c);
+    b.onpointerdown = e => { e.preventDefault(); audio(); tool = t; store.set("tool", t);
+      [...bar.children].forEach(x => x.classList.toggle("on", x === b)); tone(880, 880, .05, "square", .05); };
+    bar.appendChild(b);
+  }
+}
+
+// ------------------------------------------------------------ layout
+let tp = 20, dpr = 1, layer = null, layerKey = "";
+let cssW = 100, cssH = 56;
+function resize() {
+  const stage = $("stage"), r = stage.getBoundingClientRect();
+  cssW = Math.max(100, Math.min(r.width - 8, (r.height - 8) * W / H));
+  cssH = cssW * H / W;
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  for (const cv of [canvas, canvas3]) { cv.style.width = cssW + "px"; cv.style.height = cssH + "px"; }
+  canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
+  tp = canvas.width / W; layerKey = "";
+  if (three) three.resize();
+}
+window.addEventListener("resize", resize);
+
+function curGrid() { return localGrid || grid; }
+function chestBoxOf(g) {
+  let a = W, b = H, c = -1, d = -1;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) if (g[j][i] === "C") { a = Math.min(a, i); b = Math.min(b, j); c = Math.max(c, i); d = Math.max(d, j); }
+  return c >= 0 ? [a, b, c + 1, d + 1] : null;
+}
+let chestBox = null;
+
+// 2D: pre-render all blocks into one picture whenever the world changes
+function renderLayer() {
+  const g = curGrid(); if (!g) return;
+  if (!layer) layer = document.createElement("canvas");
+  layer.width = canvas.width; layer.height = canvas.height;
+  const x = layer.getContext("2d"); x.imageSmoothingEnabled = false;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const ch = g[j][i]; if (ch === "." || ch === "C") continue;
+    const x0 = Math.round(i * tp), y0 = Math.round(j * tp), x1 = Math.round((i + 1) * tp), y1 = Math.round((j + 1) * tp);
+    x.drawImage(texture(ch), x0, y0, x1 - x0, y1 - y0);
+  }
+  if (chestBox) { const [a, b, c, d] = chestBox; drawChest(x, a * tp, b * tp, (c - a) * tp, (d - b) * tp, tp / 8); }
+}
+
+// ------------------------------------------------------------ effects (shared by 2D and 3D)
+const parts = [];
+function burst(x, y, cols, n, speed = 6, life = .7, size = .18, grav = 14) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, s = Math.random() * speed;
+    parts.push({ x, y, z: (Math.random() - .5) * .8, vx: Math.cos(a) * s, vy: Math.sin(a) * s - speed * .3, vz: (Math.random() - .5) * speed * .6,
+      life, t: life, c: cols[i % cols.length], s: size * (.6 + Math.random() * .8), g: grav });
+  }
+}
+let shake = 0, confetti = 0;
+const rings = [];
+const drops = []; // dotted line from the finger up to where the balls are born
+
+// ------------------------------------------------------------ network: stream down
+let es = null;
+function connect() {
+  if (es) es.close();
+  es = new EventSource("/api/stream");
+  es.onmessage = ev => { lastFrameAt = performance.now(); onData(JSON.parse(ev.data)); };
+  es.onerror = () => {};
+}
+function onData(d) {
+  if (d.g) {
+    grid = d.g; gridVer = d.gv; localGrid = null; viewVer++;
+    chestBox = chestBoxOf(grid);
+    return;
+  }
+  const now = performance.now();
+  if (d.f) { const keep = new Set(); for (let i = 0; i < d.b.length; i += 4) keep.add(d.b[i]); for (const id of balls.keys()) if (!keep.has(id)) balls.delete(id); }
+  for (const id of d.r) balls.delete(id);
+  for (let i = 0; i < d.b.length; i += 4) {
+    const id = d.b[i], x = d.b[i + 1] / 100, y = d.b[i + 2] / 100, c = d.b[i + 3];
+    const b = balls.get(id);
+    if (b) { const p = ballPos(b, now); b.fx = p[0]; b.fy = p[1]; b.tx = x; b.ty = y; b.t0 = now; }
+    else balls.set(id, { fx: x, fy: y, tx: x, ty: y, t0: now, c });
+  }
+  const prev = st;
+  st = d; stAt = now;
+  soundOn = BOARD || !d.mu;
+  $("freeze").hidden = !(d.fz && !BOARD);
+  if (serverSS === null) {
+    serverSS = d.ss;
+    if (BOARD && TEACHER) join();
+    else if (myAv >= 0 && myAv < 12 && mySS === d.ss) join();
+    else showPicker();
+  } else if (d.ss !== serverSS) {
+    serverSS = d.ss;
+    if (!(BOARD && TEACHER)) { store.set("ss", ""); mySS = ""; showPicker(); } else join();
+  }
+  if (joined) {
+    const me = (d.tm || []).find(t => t[0] === myN);
+    const t = me ? me[2] : (myAv === 12 ? null : myTeam);
+    if (t !== myTeam || !barKey) setTeam(t);
+  }
+  for (const e of d.e) {
+    if (e[0] === "x") { burst(e[1] + .5, e[2] + .5, ["#ffeb3b", "#ff9800", "#f44336", "#555", "#fff"], 40, 12, 1.1, .3, 4); shake = .5; SFX.boom(); }
+    else if (e[0] === "c") {
+      if (chestBox && e[3]) burst((chestBox[0] + chestBox[2]) / 2 + (Math.random() - .5) * 2, chestBox[1], [ballColor(e[2]), "#ffcf3f"], 6, 4, .6, .14, 4);
+      if (e[3] && (e[1] === myN || BOARD)) SFX.ding();
+    }
+    else if (e[0] === "s") { if (e[3] !== myN && BOARD) SFX.place(); }
+    else if (e[0] === "d") { burst(e[1] + .5, e[2] + .5, ["#866043", "#7d7d7d", "#5fa83a"], 10, 5, .5, .16); }
+  }
+  if (d.party && !prev.party) confetti = 3.5;
+  if (d.st !== prev.st || d.lv !== prev.lv) onState(prev, d);
+  if (d.st === "count" && joined) { // 3-2-1 beeps
+    const left = Math.ceil((d.cd ?? 0) / 1000);
+    if (left !== lastBeep && left <= 3) { lastBeep = left; SFX.beep(left === 0); }
+  }
+  updateHud(); if (BOARD) updateBoardChrome();
+}
+let lastBeep = -1;
+function ballColor(c) { return c === 12 ? "#ff66cc" : COLORS[c] || "#fff"; }
+function ballPos(b, now) {
+  const k = Math.min(1, (now - b.t0) / 110);
+  return [b.fx + (b.tx - b.fx) * k, b.fy + (b.ty - b.fy) * k];
+}
+
+// ------------------------------------------------------------ HUD + banners
+let starsKey = "";
+function updateHud() {
+  const playing = ["count", "play", "won", "lost"].includes(st.st);
+  const done = st.st === "done";
+  const key = st.lv + ":" + st.nl + ":" + st.st;
+  if (key !== starsKey) {
+    starsKey = key; const box = $("stars"); box.innerHTML = "";
+    for (let i = 0; i < st.nl; i++) {
+      const sp = document.createElement("span"); sp.textContent = "⭐";
+      if (done || i < st.lv || (i === st.lv && st.st === "won")) sp.className = "done";
+      else if (i === st.lv && playing) sp.className = "now";
+      box.appendChild(sp);
+    }
+  }
+  $("goalBox").hidden = !playing; $("timeBox").hidden = !playing; $("waitBox").hidden = playing;
+  $("waitBox").textContent = done ? "🏆 Усі рівні пройдено!" : "🙂 Розминка · чекаємо ▶ від вчителя";
+  $("goalFill").style.width = Math.min(100, st.k / st.goal * 100) + "%";
+  $("goalTxt").textContent = st.k + " / " + st.goal;
+}
+function tickHud(now) {
+  let left = st.tt;
+  if (st.st === "play" && st.tl != null) left = Math.max(0, st.tl - (st.fz ? 0 : now - stAt));
+  else if (st.st !== "count") left = 0;
+  $("timeFill").style.width = left / st.tt * 100 + "%";
+  $("timeBar").classList.toggle("low", st.st === "play" && left < 10000);
+  const sec = Math.ceil(left / 1000), txt = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+  if ($("timeTxt").textContent !== txt) $("timeTxt").textContent = txt;
+}
+// progress bar that hangs above the chest inside the world (same picture in 2D and 3D)
+const chestBarCanvas = document.createElement("canvas"); chestBarCanvas.width = 256; chestBarCanvas.height = 64;
+let chestBarKey = "";
+function chestBar() {
+  const playing = ["count", "play", "won", "lost"].includes(st.st);
+  const key = playing ? st.k + "/" + st.goal : "";
+  if (key === chestBarKey) return key !== "";
+  chestBarKey = key;
+  const x = chestBarCanvas.getContext("2d"), Wc = 256, Hc = 64;
+  x.clearRect(0, 0, Wc, Hc);
+  if (!playing) return false;
+  x.fillStyle = "#000"; x.fillRect(0, 8, Wc, Hc - 16);
+  x.fillStyle = "#3b2a1a"; x.fillRect(5, 13, Wc - 10, Hc - 26);
+  const g = x.createLinearGradient(5, 0, Wc - 5, 0);
+  ["#ff4d4d", "#ffb84d", "#fff04d", "#5ee35e", "#4dc3ff", "#a64dff"].forEach((h, i) => g.addColorStop(i / 5, h));
+  x.fillStyle = g; x.fillRect(5, 13, (Wc - 10) * Math.min(1, st.k / st.goal), Hc - 26);
+  x.font = "800 30px system-ui, sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+  x.lineWidth = 6; x.strokeStyle = "#000"; x.strokeText(key.replace("/", " / "), Wc / 2, Hc / 2 + 1);
+  x.fillStyle = "#fff"; x.fillText(key.replace("/", " / "), Wc / 2, Hc / 2 + 1);
+  if (three) three.chestBarDirty();
+  return true;
+}
+let bannerTimer = 0;
+function banner(html, color, ms) {
+  const b = $("banner"), inn = $("bnIn");
+  inn.style.setProperty("--c", color); inn.innerHTML = html;
+  b.hidden = false; inn.style.animation = "none"; void inn.offsetWidth; inn.style.animation = "";
+  clearTimeout(bannerTimer); bannerTimer = setTimeout(() => { b.hidden = true; }, ms);
+}
+function onState(prev, d) {
+  if (gameEl.hidden) return;
+  if (d.st === "count") {
+    lastBeep = -1;
+    if (BOARD || myTeam === null) {
+      banner(`<div class="big">⭐${d.lv + 1}</div><h2>Рівень ${d.lv + 1}</h2><p>🧺 Збирачі проти 🧱 Заважайок</p>`, "#5a4330", 4200);
+    } else {
+      const T = TEAM[myTeam];
+      banner(`<div class="row"><canvas width="12" height="12" id="bnAv"></canvas><div class="big">${T.icon}</div></div><h2>${T.name}</h2><p>⭐ Рівень ${d.lv + 1} · ${T.say}</p>`, T.color, 4200);
+      drawSprite($("bnAv"), myAv, myTeam);
+    }
+    tone(392, 392, .2, "square", .07); tone(523, 523, .3, "square", .07, .2);
+  } else if (d.st === "won" || d.st === "lost") {
+    const w = d.st === "won" ? 0 : 1, T = TEAM[w];
+    const mine = myTeam === w;
+    const sub = w === 0 ? (d.lv + 1 < d.nl ? "Далі новий рівень, ще складніший!" : "Усі рівні пройдено!") : "Час вийшов. Цей рівень ще раз!";
+    banner(`<div class="big">${mine || BOARD ? "🏆" : T.icon}</div><h2>${T.icon} ${T.name} перемогли!</h2><p>${sub}</p>`, T.color, 6500);
+    if (mine || BOARD) SFX.party(); else SFX.sad();
+    if (mine) confetti = Math.max(confetti, 2.5);
+  } else if (d.st === "done") {
+    banner(`<div class="big">🏆</div><h2>ПЕРЕМОГА!</h2><p>Усі ${d.nl} рівнів пройдено разом!</p>`, "#c99a00", 9000);
+    SFX.party(); confetti = 6;
+  } else if (d.st === "ready") {
+    $("banner").hidden = true;
+  }
+}
+
+// ------------------------------------------------------------ network: actions up (batched)
+let queue = [], inflight = false;
+function send(a) { if (queue.length < 40) queue.push(a); }
+setInterval(async () => {
+  if (inflight || !queue.length || !joined) return;
+  const a = queue; queue = []; inflight = true;
+  try {
+    const r = await fetch("/api/act", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pid, session: mySS, a }) });
+    const d = await r.json();
+    if (d.stale) { mySS = d.session; store.set("ss", ""); if (BOARD && TEACHER) join(); else showPicker(); }
+  } catch (e) { /* wifi hiccup: drop it, the child just taps again */ }
+  inflight = false;
+}, 90);
+
+// ------------------------------------------------------------ input
+const pointers = new Map();
+function toWorld(e) {
+  if (use3D && three) return three.pick(e);
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H];
+}
+function blocked() { return (st.fz && !BOARD) || ["count", "won", "lost"].includes(st.st); }
+function useTool(x, y, first) {
+  if (blocked()) return;
+  if (!(x >= 0 && y >= 0 && x < W && y < H)) return;
+  const tx = Math.floor(x), ty = Math.floor(y), g = curGrid();
+  if (tool === "b") {
+    send(["b", +x.toFixed(2), +y.toFixed(2), first ? 1 : 0]);
+    const sy = Math.min(y, SKY - .6); // the ball starts up in the sky above the finger
+    burst(x, sy, [ballColor(myAv), "#fff"], first ? 8 : 3, 4, .35, .12, 0);
+    SFX.pop();
+    if (first) { rings.push({ x, y: sy, t: performance.now() }); if (y > SKY) drops.push({ x, y0: sy, y1: y, t: performance.now() }); }
+  } else if (tool === "d") {
+    if (!g || g[ty][tx] === "." || "BC".includes(g[ty][tx])) return;
+    send(["d", tx, ty]); setLocal(tx, ty, "."); SFX.dig();
+    burst(tx + .5, ty + .5, ["#866043", "#7d7d7d", "#5fa83a"], 10, 5, .5, .16);
+  } else {
+    if (!g || g[ty][tx] !== ".") return;
+    send(["s", tx, ty, tool]); setLocal(tx, ty, tool); SFX.place();
+  }
+}
+function setLocal(x, y, ch) { // show my block at once, the server confirms a moment later
+  if (!grid) return;
+  if (!localGrid) localGrid = grid.slice();
+  localGrid[y] = localGrid[y].slice(0, x) + ch + localGrid[y].slice(x + 1);
+  viewVer++;
+}
+for (const cv of [canvas, canvas3]) {
+  cv.addEventListener("pointerdown", e => {
+    e.preventDefault(); audio(); $("hint").hidden = true;
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    const [x, y] = toWorld(e);
+    pointers.set(e.pointerId, { x, y, cell: Math.floor(x) + "," + Math.floor(y), last: performance.now() });
+    useTool(x, y, true);
+  });
+  const up = e => pointers.delete(e.pointerId);
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+}
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("dblclick", e => e.preventDefault());
+// one tap = one action: holding or dragging does nothing more (less chaos in class)
+
+// ------------------------------------------------------------ board chrome
+function updateBoardChrome() {
+  $("bFreeze").classList.toggle("on", st.fz);
+  $("bMute").classList.toggle("on", st.mu);
+  $("bMute").textContent = st.mu ? "🔇 Планшети без звуку" : "🔊 Звук на планшетах";
+  $("bStart").textContent = st.st === "ready" ? "▶ Почати гру" : st.st === "done" ? "▶ Грати знову" : "↺ Рівень спочатку";
+  const box = $("teams");
+  const key = JSON.stringify([st.tm, st.n, st.st]);
+  if (box.dataset.k === key) return;
+  box.dataset.k = key; box.innerHTML = "";
+  const groups = { 0: [], 1: [], x: [] };
+  for (const [n, av, t] of st.tm || []) (t === 0 || t === 1 ? groups[t] : groups.x).push(av);
+  const mk = (cls, label, list) => {
+    const d = document.createElement("div"); d.className = "team " + cls;
+    d.append(label);
+    for (const av of list) { const c = document.createElement("canvas"); c.width = c.height = 10; drawSprite(c, av); d.appendChild(c); }
+    box.appendChild(d);
+  };
+  if (groups[0].length || groups[1].length) {
+    mk("t0", `🧺 Збирачі (${groups[0].length}) `, groups[0]);
+    mk("t1", `🧱 Заважайки (${groups[1].length}) `, groups[1]);
+  }
+  if (groups.x.length) mk("", `🙂 Грають (${groups.x.length}) `, groups.x);
+  const info = document.createElement("span"); info.className = "info";
+  info.textContent = st.st === "ready" ? "Коли всі зайдуть, натисніть ▶ Почати гру" : `кульок у світі: ${st.n}`;
+  box.appendChild(info);
+}
+if (BOARD) {
+  $("joinUrl").textContent = window.JOIN || location.host;
+  $("meBtn").hidden = true;
+  if (TEACHER) {
+    $("tbtns").hidden = false;
+    $("tbtns").addEventListener("click", async e => {
+      const b = e.target.closest("button"); if (!b) return;
+      const a = b.dataset.a;
+      if (a === "newclass" && !confirm("Новий клас: рівень 1, усі діти виберуть звірятко заново. Почати?")) return;
+      if (a === "next" && !confirm("Перейти на наступний рівень?")) return;
+      await fetch("/api/teacher", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: a }) });
+    });
+  }
+}
+
+// ------------------------------------------------------------ 3D view (three.js, served by the class laptop)
+let three = null, use3D = false;
+const viewPref = store.get("view");
+async function init3D() {
+  let THREE;
+  try { THREE = await import("/three.module.min.js"); } catch (e) { return false; }
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas3, antialias: true }); } catch (e) { return false; }
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene();
+  const sky = document.createElement("canvas"); sky.width = 4; sky.height = 256;
+  { const x = sky.getContext("2d"), g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, "#4f9ee8"); g.addColorStop(1, "#d6f0ff"); x.fillStyle = g; x.fillRect(0, 0, 4, 256); }
+  const skyTex = new THREE.CanvasTexture(sky); skyTex.colorSpace = THREE.SRGBColorSpace; scene.background = skyTex;
+  scene.fog = new THREE.Fog(0xcfeaff, 80, 160);
+  const camera = new THREE.PerspectiveCamera(34, 16 / 9, 0.5, 400);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x6b5a45, 1.15));
+  const sun = new THREE.DirectionalLight(0xfff4dd, 1.9);
+  sun.position.set(W / 2 - 18, 30, 34); sun.target.position.set(W / 2, -H / 2, 0);
+  sun.castShadow = true; sun.shadow.mapSize.set(BOARD ? 2048 : 1024, BOARD ? 2048 : 1024);
+  Object.assign(sun.shadow.camera, { left: -34, right: 34, top: 26, bottom: -26, near: 1, far: 120 });
+  sun.shadow.bias = -0.0008;
+  scene.add(sun, sun.target);
+
+  const tex = ch => { const t = new THREE.CanvasTexture(texture(ch)); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; return t; };
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  const MAT = {};
+  const side = { G: tex("G"), top: tex("g"), D: tex("D") };
+  for (const ch of "GDSBWLJAT") {
+    const opts = { map: ch === "G" ? side.G : tex(ch) };
+    if (ch === "L") { opts.alphaTest = 0.5; }
+    if (ch === "J") { opts.transparent = true; opts.opacity = 0.9; }
+    if (ch === "A") { opts.transparent = true; opts.opacity = 0.55; opts.depthWrite = false; }
+    MAT[ch] = ch === "G"
+      ? [side.G, side.G, side.top, side.D, side.G, side.G].map(m => new THREE.MeshLambertMaterial({ map: m }))
+      : new THREE.MeshLambertMaterial(opts);
+  }
+  const CAP = W * H * 3;
+  const blocks = {};
+  for (const ch of "GDSBWLJAT") {
+    const m = new THREE.InstancedMesh(box, MAT[ch], CAP); m.count = 0;
+    m.castShadow = ch !== "A"; m.receiveShadow = true; m.frustumCulled = false;
+    scene.add(m); blocks[ch] = m;
+  }
+  const chestMesh = new THREE.Mesh(box, new THREE.MeshLambertMaterial()); chestMesh.castShadow = chestMesh.receiveShadow = true; scene.add(chestMesh);
+  let chestTexKey = "";
+  // a far-away blocky landscape behind the world
+  { const r = rng(42);
+    const mats = [new THREE.MeshLambertMaterial({ color: 0x7fb069 }), new THREE.MeshLambertMaterial({ color: 0x6a9a58 }), new THREE.MeshLambertMaterial({ color: 0x9aa7b0 })];
+    for (let i = -10; i < W + 10; i += 3) {
+      const h = 6 + r() * 14, m = new THREE.Mesh(box, mats[Math.floor(r() * 3)]);
+      m.scale.set(3, h, 6); m.position.set(i, -H + 1 + h / 2, -14 - r() * 10); scene.add(m);
+    }
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(300, 120), new THREE.MeshLambertMaterial({ color: 0x5f9e3a }));
+    floor.rotation.x = -Math.PI / 2; floor.position.set(W / 2, -H + 0.5, -40); floor.receiveShadow = true; scene.add(floor);
+  }
+  const clouds3 = [];
+  { const cm = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x666666 });
+    for (let i = 0; i < 7; i++) { const m = new THREE.Mesh(box, cm); m.scale.set(4 + Math.random() * 5, 1, 3); m.position.set(i * 9 - 8, 3 + Math.random() * 4, -8 - Math.random() * 6); scene.add(m); clouds3.push(m); } }
+  const sunBox = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: 0xfff176 })); sunBox.scale.set(5, 5, 1); sunBox.position.set(W - 3, 6, -30); scene.add(sunBox);
+
+  const ballMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(R, 18, 12), new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.05 }), 600);
+  ballMesh.castShadow = true; ballMesh.frustumCulled = false; scene.add(ballMesh);
+  const col = new THREE.Color(), mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3();
+  const COL3 = COLORS.map(c => c === "rainbow" ? null : new THREE.Color(c));
+  const partMesh = new THREE.InstancedMesh(box, new THREE.MeshLambertMaterial(), 900); partMesh.frustumCulled = false; scene.add(partMesh);
+  const flash = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 }), 32); flash.frustumCulled = false; scene.add(flash);
+  const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(1, 0.08, 6, 24), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true })); scene.add(ringMesh);
+  const animalMat = {}, animals = [];
+  const animalSprite = (av, team) => { const k = av + ":" + team; if (!animalMat[k]) { const t = new THREE.CanvasTexture(sprite(av, team)); t.magFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; animalMat[k] = new THREE.SpriteMaterial({ map: t }); } return animalMat[k]; };
+
+  const skyBand = new THREE.Mesh(new THREE.PlaneGeometry(W, SKY), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false }));
+  skyBand.position.set(W / 2, -SKY / 2, 0.55); scene.add(skyBand);
+  const skyEdge = new THREE.Mesh(new THREE.BoxGeometry(W, 0.08, 0.08), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }));
+  skyEdge.position.set(W / 2, -SKY, 0.55); scene.add(skyEdge);
+  const dropLine = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1, 0.12), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true })); scene.add(dropLine);
+  const barTex = new THREE.CanvasTexture(chestBarCanvas); barTex.colorSpace = THREE.SRGBColorSpace;
+  const barSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: barTex, depthTest: false })); barSprite.renderOrder = 10; scene.add(barSprite);
+  let builtVer = -1;
+  function rebuild() {
+    const g = curGrid(); if (!g) return;
+    const cnt = {}; for (const ch in blocks) cnt[ch] = 0;
+    const put = (ch, i, j, z) => { const m = blocks[ch]; if (!m) return; mtx.makeTranslation(i + .5, -(j + .5), z); m.setMatrixAt(cnt[ch]++, mtx); };
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+      const ch = g[j][i]; if (ch === "." || ch === "C") continue;
+      put(ch, i, j, 0);
+      if ("GDSB".includes(ch)) { put(ch, i, j, -1); put(ch, i, j, -2); } // thick ground
+      else if (ch === "W" || ch === "L") put(ch, i, j, -1);
+    }
+    for (const ch in blocks) { blocks[ch].count = cnt[ch]; blocks[ch].instanceMatrix.needsUpdate = true; }
+    if (chestBox) {
+      const [a, b, c, d] = chestBox, key = (c - a) + "x" + (d - b);
+      if (key !== chestTexKey) { chestTexKey = key; const t = new THREE.CanvasTexture(chestCanvas(c - a, d - b)); t.magFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; chestMesh.material.map = t; chestMesh.material.needsUpdate = true; }
+      chestMesh.visible = true; chestMesh.scale.set(c - a, d - b, 2.2); chestMesh.position.set((a + c) / 2, -(b + d) / 2, -0.4);
+    } else chestMesh.visible = false;
+    builtVer = viewVer;
+  }
+
+  function placeCamera(now) {
+    const aspect = canvas3.width / canvas3.height;
+    camera.aspect = aspect;
+    const f = Math.tan(camera.fov * Math.PI / 360);
+    const d = Math.max((H + 3) / 2 / f, (W + 4) / 2 / (f * aspect)) * 1.02;
+    const sway = Math.sin(now / 9000) * 3.5;
+    camera.position.set(W / 2 + sway, -H / 2 + 9, d);
+    if (shake > 0) { camera.position.x += (Math.random() - .5) * shake; camera.position.y += (Math.random() - .5) * shake; }
+    camera.lookAt(W / 2 + sway * .3, -H / 2 + 0.5, 0);
+    camera.updateProjectionMatrix();
+  }
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), hit = new THREE.Vector3();
+  function pick(e) {
+    const r = canvas3.getBoundingClientRect();
+    ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    if (!ray.ray.intersectPlane(plane, hit)) return [-1, -1];
+    return [hit.x, -hit.y];
+  }
+  function resize3() {
+    renderer.setPixelRatio(Math.min(BOARD ? 2 : 1.5, window.devicePixelRatio || 1));
+    renderer.setSize(cssW, cssH, false);
+  }
+  function render(now, dt) {
+    if (builtVer !== viewVer) rebuild();
+    placeCamera(now);
+    let n = 0;
+    for (const [id, b] of balls) {
+      if (n >= 600) break;
+      const [x, y] = ballPos(b, now);
+      mtx.makeTranslation(x, -y, 0); ballMesh.setMatrixAt(n, mtx);
+      if (b.c === 12) col.setHSL(((id * 0.137) + now / 4000) % 1, 0.9, 0.55); else col.copy(COL3[b.c] || COL3[10]);
+      ballMesh.setColorAt(n, col); n++;
+    }
+    ballMesh.count = n; ballMesh.instanceMatrix.needsUpdate = true; if (ballMesh.instanceColor) ballMesh.instanceColor.needsUpdate = true;
+    let m = 0;
+    for (const p of parts) {
+      if (m >= 900) break;
+      const s = p.s * Math.min(1, p.t / p.life * 2);
+      mtx.compose(v.set(p.x, -p.y, p.z || 0), q, sc.set(s, s, s)); partMesh.setMatrixAt(m, mtx);
+      partMesh.setColorAt(m, col.set(p.c)); m++;
+    }
+    partMesh.count = m; partMesh.instanceMatrix.needsUpdate = true; if (partMesh.instanceColor) partMesh.instanceColor.needsUpdate = true;
+    let f = 0;
+    if (Math.floor(now / 150) % 2) for (const [fx, fy] of st.fuse || []) { if (f >= 32) break; mtx.compose(v.set(fx + .5, -(fy + .5), 0), q, sc.set(1.06, 1.06, 1.06)); flash.setMatrixAt(f++, mtx); }
+    flash.count = f; flash.instanceMatrix.needsUpdate = true;
+    const rg = rings[rings.length - 1];
+    if (rg && now - rg.t < 400) { const k = (now - rg.t) / 400; ringMesh.visible = true; ringMesh.position.set(rg.x, -rg.y, 0.6); ringMesh.scale.setScalar(.4 + k * 1.4); ringMesh.material.opacity = 1 - k; }
+    else ringMesh.visible = false;
+    const who = st.p || [];
+    while (animals.length < who.length) { const s = new THREE.Sprite(); scene.add(s); animals.push(s); }
+    animals.forEach((s, i) => {
+      const w = who[i]; s.visible = !!w; if (!w) return;
+      const [nn, av, x, y] = w, tm = (st.tm || []).find(t => t[0] === nn);
+      s.material = animalSprite(av, tm ? tm[2] : null);
+      const big = nn === myN ? 2.1 : 1.7;
+      s.scale.set(big, big, 1); s.position.set(x, -(y - 1.4) + Math.sin(now / 200 + nn) * .12, 1.2);
+    });
+    const dl = drops[drops.length - 1];
+    if (dl) { const k = (now - dl.t) / 600; dropLine.visible = true; dropLine.scale.y = dl.y1 - dl.y0; dropLine.position.set(dl.x, -(dl.y0 + dl.y1) / 2, 0.6); dropLine.material.opacity = .8 * (1 - k); }
+    else dropLine.visible = false;
+    barSprite.visible = !!chestBox && chestBar();
+    if (barSprite.visible) { barSprite.scale.set(7, 1.75, 1); barSprite.position.set((chestBox[0] + chestBox[2]) / 2, -(chestBox[1] - 2.3), 1.5); }
+    for (const c of clouds3) { c.position.x += dt * .3; if (c.position.x > W + 14) c.position.x = -14; }
+    renderer.render(scene, camera);
+  }
+  three = { render, pick, resize: resize3, chestBarDirty() { barTex.needsUpdate = true; } };
+  resize3();
+  return true;
+}
+function setView(threeD) {
+  use3D = threeD && !!three;
+  canvas3.hidden = !use3D; canvas.hidden = use3D;
+  $("viewBtn").textContent = use3D ? "2D" : "3D";
+  store.set("view", use3D ? "3d" : "2d");
+}
+$("viewBtn").onclick = () => setView(!use3D);
+init3D().then(ok => {
+  if (!ok) return;
+  $("viewBtn").hidden = false;
+  setView(viewPref !== "2d");
+});
+
+// ------------------------------------------------------------ drawing loop
+const clouds = Array.from({ length: 6 }, (_, i) => ({ x: i * 9 + Math.random() * 5, y: 1 + Math.random() * 4, w: 3 + Math.random() * 3 }));
+let lastT = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+  $("net").classList.toggle("ok", now - lastFrameAt < 3000);
+  if (gameEl.hidden || !grid) return;
+  tickHud(now);
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i]; p.t -= dt; if (p.t <= 0) { parts.splice(i, 1); continue; }
+    p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += (p.vz || 0) * dt;
+  }
+  if (confetti > 0) {
+    confetti -= dt;
+    for (let i = 0; i < 3; i++) parts.push({ x: Math.random() * W, y: -0.5, z: (Math.random() - .5) * 3, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 3, vz: 0, life: 3, t: 3,
+      c: ["#ff4d4d", "#ffb84d", "#fff04d", "#5ee35e", "#4dc3ff", "#a64dff"][Math.floor(Math.random() * 6)], s: .35, g: 1.5 });
+  }
+  if (shake > 0) shake -= dt;
+  for (let i = rings.length - 1; i >= 0; i--) if (now - rings[i].t > 400) rings.splice(i, 1);
+  for (let i = drops.length - 1; i >= 0; i--) if (now - drops[i].t > 600) drops.splice(i, 1);
+  if (use3D && three) { three.render(now, dt); return; }
+  draw2D(now, dt);
+}
+function draw2D(now, dt) {
+  const key = viewVer + ":" + tp;
+  if (layerKey !== key) { renderLayer(); layerKey = key; }
+  const c = ctx; c.imageSmoothingEnabled = false;
+  c.save();
+  if (shake > 0) { const s = shake * tp * .8; c.translate((Math.random() - .5) * s, (Math.random() - .5) * s); }
+  const sky = c.createLinearGradient(0, 0, 0, canvas.height);
+  sky.addColorStop(0, "#6fb8f5"); sky.addColorStop(1, "#d3efff");
+  c.fillStyle = sky; c.fillRect(-20, -20, canvas.width + 40, canvas.height + 40);
+  c.fillStyle = "#fff59d"; c.fillRect(42.5 * tp, 1 * tp, 3 * tp, 3 * tp);
+  c.fillStyle = "#ffee58"; c.fillRect(43 * tp, 1.5 * tp, 2 * tp, 2 * tp);
+  c.fillStyle = "rgba(255,255,255,.92)";
+  for (const cl of clouds) {
+    cl.x += dt * .25; if (cl.x > W + 2) cl.x = -cl.w - 2;
+    c.fillRect(cl.x * tp, cl.y * tp, cl.w * tp, tp); c.fillRect((cl.x + .8) * tp, (cl.y - .6) * tp, (cl.w - 1.6) * tp, .7 * tp);
+  }
+  c.fillStyle = "rgba(255,255,255,.22)"; c.fillRect(0, 0, W * tp, SKY * tp);
+  c.strokeStyle = "rgba(255,255,255,.8)"; c.lineWidth = Math.max(2, tp * .08); c.setLineDash([tp * .5, tp * .35]);
+  c.beginPath(); c.moveTo(0, SKY * tp); c.lineTo(W * tp, SKY * tp); c.stroke(); c.setLineDash([]);
+  c.drawImage(layer, 0, 0);
+  for (const d of drops) {
+    const k = (now - d.t) / 600;
+    c.strokeStyle = `rgba(255,255,255,${.8 * (1 - k)})`; c.lineWidth = tp * .12; c.setLineDash([tp * .25, tp * .3]);
+    c.beginPath(); c.moveTo(d.x * tp, d.y1 * tp); c.lineTo(d.x * tp, d.y0 * tp); c.stroke(); c.setLineDash([]);
+  }
+  for (const [fx, fy] of st.fuse || []) if (Math.floor(now / 150) % 2) { c.fillStyle = "rgba(255,255,255,.65)"; c.fillRect(fx * tp, fy * tp, tp, tp); }
+  if (chestBox && chestBar()) {
+    const cx = (chestBox[0] + chestBox[2]) / 2, bw = 6, bh = 1.5;
+    c.drawImage(chestBarCanvas, (cx - bw / 2) * tp, (chestBox[1] - 2.2) * tp, bw * tp, bh * tp);
+  }
+  const bs = Math.max(4, Math.round(R * 2 * tp));
+  for (const b of balls.values()) {
+    const [x, y] = ballPos(b, now);
+    c.drawImage(ballSprite(b.c === 12 ? "rainbow" : COLORS[b.c], bs), x * tp - bs / 2, y * tp - bs / 2);
+  }
+  for (const p of parts) {
+    c.globalAlpha = Math.min(1, p.t / p.life * 2); c.fillStyle = p.c; c.fillRect((p.x - p.s / 2) * tp, (p.y - p.s / 2) * tp, p.s * tp, p.s * tp);
+  }
+  c.globalAlpha = 1;
+  for (const r of rings) {
+    const k = (now - r.t) / 400;
+    c.strokeStyle = `rgba(255,255,255,${1 - k})`; c.lineWidth = tp * .15; c.beginPath(); c.arc(r.x * tp, r.y * tp, tp * (.4 + k * 1.4), 0, Math.PI * 2); c.stroke();
+  }
+  for (const [n, av, x, y] of st.p || []) {
+    const tm = (st.tm || []).find(t => t[0] === n);
+    const s = tp * (n === myN ? 1.9 : 1.6), bob = Math.sin(now / 200 + n) * tp * .12;
+    c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(x * tp - s / 2 + 3, (y - 1.4) * tp - s / 2 + bob + 3, s, s);
+    c.drawImage(sprite(av, tm ? tm[2] : null), x * tp - s / 2, (y - 1.4) * tp - s / 2 + bob, s, s);
+  }
+  c.restore();
+}
+
+connect();
+requestAnimationFrame(frame);
+setInterval(() => { if (performance.now() - lastFrameAt > 6000) connect(); }, 3000);
+})();
+</script>
+</body>
+</html>
+
+<!-- © 2026 Yuriy Padlyak. «Класні ігри». Ліцензія CC BY-NC-SA 4.0: https://creativecommons.org/licenses/by-nc-sa/4.0/ . Комерційне використання лише за окремою ліцензією автора. -->
