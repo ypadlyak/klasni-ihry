@@ -2,7 +2,7 @@
 
 Безкоштовні навчальні ігри для уроків інформатики, 0–7 клас.
 
-**Сайт:** https://ypadlyak.github.io/klasni-ihry/
+**Сайт:** https://ypadlyak.github.io/klasni-ihry/ · **English:** https://ypadlyak.github.io/klasni-ihry/en/
 
 | Гра | Клас | Що вчить |
 |---|---|---|
@@ -35,4 +35,15 @@ python3 landscape-server.py        # або house-server.py, format-server.py, k
 
 ---
 
-*English:* Free educational games for computer-science lessons (Ukrainian UI). © 2026 Yuriy Padlyak, licensed under CC BY-NC-SA 4.0. Commercial use requires a separate license from the author. See [LICENSING.md](LICENSING.md).
+## English
+
+Free educational games for computer science lessons (grades K, 5 and 7), in English and Ukrainian: https://ypadlyak.github.io/klasni-ihry/en/
+
+- **A House in Perspective** (grade 7): two-point linear perspective.
+- **Landscape in Perspective** (grade 7): one-point perspective and drawing layers.
+- **Ready to Print** (grade 5): page setup, margins, fonts, line spacing, headers and footers, printing.
+- **Kulkosvit** (kindergarten): one shared block world for the whole class on tablets, no reading needed.
+
+Play solo in the browser, or run `python3 <game>-server.py` from the `klas` folder on the teacher’s laptop for a class leaderboard on the projector (the class kit UI is Ukrainian for now).
+
+© 2026 Yuriy Padlyak, licensed under CC BY-NC-SA 4.0. Commercial use requires a separate license from the author. See [LICENSING.md](LICENSING.md).

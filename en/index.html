@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Klasni Ihry: free games for computer science lessons</title>
+<meta name="description" content="Free educational games for computer science lessons, grades K, 5 and 7: linear perspective, getting a report ready to print, and a shared block world for the youngest. No sign-up, no ads. Play solo in the browser or as a whole class with a live leaderboard on the projector.">
+<meta name="author" content="Yuriy Padlyak">
+<meta name="keywords" content="computer science, ICT, educational games, classroom games, perspective drawing, vanishing point, page setup, word processing, grade 5, grade 7, kindergarten">
+<link rel="canonical" href="https://ypadlyak.github.io/klasni-ihry/en/">
+<link rel="alternate" hreflang="uk" href="https://ypadlyak.github.io/klasni-ihry/"><link rel="alternate" hreflang="en" href="https://ypadlyak.github.io/klasni-ihry/en/"><link rel="alternate" hreflang="x-default" href="https://ypadlyak.github.io/klasni-ihry/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:site_name" content="Klasni Ihry">
+<meta property="og:url" content="https://ypadlyak.github.io/klasni-ihry/en/">
+<meta property="og:title" content="Klasni Ihry: free games for computer science lessons">
+<meta property="og:description" content="Perspective drawing, getting a report ready to print, and a shared block world for the youngest. No sign-up, for one pupil or the whole class.">
+<meta property="og:image" content="https://ypadlyak.github.io/klasni-ihry/assets/og-en.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:video" content="https://ypadlyak.github.io/klasni-ihry/assets/demo-en.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:video:width" content="1280">
+<meta property="og:video:height" content="720">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "name": "Klasni Ihry", "alternateName": "Класні ігри", "url": "https://ypadlyak.github.io/klasni-ihry/en/", "inLanguage": "en", "author": {"@type": "Person", "name": "Yuriy Padlyak"}, "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/"}, {"@type": ["LearningResource", "VideoGame"], "name": "A House in Perspective", "url": "https://ypadlyak.github.io/klasni-ihry/en/games/perspective-house/", "description": "Grade 7: two-point linear perspective in a drawing editor.", "inLanguage": "en", "typicalAgeRange": "12-13", "learningResourceType": "educational game", "about": "Computer science", "isAccessibleForFree": true, "gamePlatform": "Web browser", "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/", "author": {"@type": "Person", "name": "Yuriy Padlyak"}}, {"@type": ["LearningResource", "VideoGame"], "name": "Landscape in Perspective", "url": "https://ypadlyak.github.io/klasni-ihry/en/games/landscape/", "description": "Grade 7: one-point perspective and drawing layers (send to back / bring to front).", "inLanguage": "en", "typicalAgeRange": "12-13", "learningResourceType": "educational game", "about": "Computer science", "isAccessibleForFree": true, "gamePlatform": "Web browser", "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/", "author": {"@type": "Person", "name": "Yuriy Padlyak"}}, {"@type": ["LearningResource", "VideoGame"], "name": "Ready to Print", "url": "https://ypadlyak.github.io/klasni-ihry/en/games/format/", "description": "Grade 5: page setup, margins, font, line spacing, headers and footers, print preview and printing.", "inLanguage": "en", "typicalAgeRange": "10-11", "learningResourceType": "educational game", "about": "Computer science", "isAccessibleForFree": true, "gamePlatform": "Web browser", "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/", "author": {"@type": "Person", "name": "Yuriy Padlyak"}}]}</script>
+<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<!-- © 2026 Yuriy Padlyak. Licensed CC BY-NC-SA 4.0. Commercial use only under a separate license from the author. -->
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#ffffff; --ink:#23272e; --muted:#5d6570; --line:#e2ddd2;
+  --accent:#e9752b; --accent-ink:#ffffff; --blue:#3a78d6; --green:#2b9a58; --chip:#efeadf;
+  --shadow:0 1px 2px rgba(40,30,10,.06),0 8px 24px rgba(40,30,10,.07);
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15181c; --panel:#1e2228; --ink:#eef1f4; --muted:#a3acb7; --line:#2e343c;
+  --accent:#ff9452; --accent-ink:#1b1206; --blue:#6ea2f2; --green:#4cc47e; --chip:#272c33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15181c; --panel:#1e2228; --ink:#eef1f4; --muted:#a3acb7; --line:#2e343c;
+  --accent:#ff9452; --accent-ink:#1b1206; --blue:#6ea2f2; --green:#4cc47e; --chip:#272c33;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--f-body);-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.hero{padding:56px 16px 28px}
+.kicker{display:inline-block;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(36px,7vw,64px)/1.05 var(--f-display);margin:10px 0 16px;letter-spacing:-.01em}
+.lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:62ch;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0;list-style:none}
+.facts li{background:var(--chip);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
+h2{font:700 clamp(22px,3.4vw,30px)/1.2 var(--f-display);margin:0 0 18px}
+section.wrap{padding:36px 16px}
+.grid{display:grid;grid-template-columns:1fr;gap:22px}
+@media (min-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;background:var(--chip);border-bottom:1px solid var(--line)}
+.card .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.tag.grade{background:var(--accent);color:var(--accent-ink)}
+.card h3{font:700 20px/1.25 var(--f-display);margin:2px 0 0}
+.card p{margin:0;color:var(--muted);font-size:15.5px}
+.actions{margin-top:auto;padding-top:8px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:15px;text-decoration:none;border-radius:12px;padding:10px 16px;border:1px solid var(--line);color:var(--ink);background:var(--panel)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.05)}
+.btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;box-shadow:var(--shadow)}
+.box h3{font:700 18px/1.3 var(--f-display);margin:0 0 8px}
+.box p,.box li{color:var(--muted);font-size:15.5px}
+.box ol,.box ul{padding-left:20px;margin:8px 0}
+code{font:14px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--chip);padding:2px 6px;border-radius:6px;color:var(--ink);overflow-wrap:anywhere}
+.lic{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;margin:0 0 16px;padding:0;list-style:none}
+.lic li{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;color:var(--muted)}
+.lic b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+.ok b::before{content:"✓ ";color:var(--green)} .no b::before{content:"✕ ";color:#d43f3f}
+.demo{display:block;width:100%;height:auto;max-width:900px;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);background:#000}
+.lang{position:absolute;top:18px;right:16px;font-weight:700;font-size:14px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--ink);background:var(--panel)}
+header.hero{position:relative}
+footer.wrap{padding:32px 16px 48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:20px}
+</style>
+<script data-goatcounter="https://ypadlyak.goatcounter.com/count" async src="../assets/goatcounter.js"></script>
+</head>
+<body>
+<header class="hero wrap">
+  <a class="lang" href="../" hreflang="uk" lang="uk">UA · Українською</a>
+  <span class="kicker">Educational games for computer science lessons</span>
+  <h1>Klasni Ihry</h1>
+  <p class="lead">“Klasni ihry” is Ukrainian for “cool class games”. These are my first games for my own lessons: pupils learn step by step, earn points for every correct action, and at the end of the lesson the top three get collectible cards. Play right in the browser, or as a whole class with a leaderboard on the projector.</p>
+  <ul class="facts">
+    <li>Free for schools and teachers</li>
+    <li>No sign-up, no ads</li>
+    <li>Works on computers, tablets and phones</li>
+    <li>English and Ukrainian</li>
+  </ul>
+</header>
+
+<main>
+<section class="wrap" id="games">
+  <h2>Games</h2>
+  <div class="grid">
+    <article class="card">
+      <img src="../assets/perspective-house.jpg" alt="A house drawn in two-point perspective" width="880" height="546" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">Grade 7</span><span class="tag">drawing editor</span></div>
+        <h3>A House in Perspective</h3>
+        <p>Two-point linear perspective. In 8 steps pupils draw the horizon line, place the vanishing points, build the walls, roof, windows and door, clear the guide lines and color the drawing.</p>
+        <div class="actions"><a class="btn primary" href="games/perspective-house/">▶ Play</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="../assets/landscape.jpg" alt="A road into a fir forest drawn with one vanishing point" width="880" height="546" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">Grade 7</span><span class="tag">drawing editor</span></div>
+        <h3>Landscape in Perspective</h3>
+        <p>A road into a fir forest with one vanishing point. Besides perspective, pupils stack the picture’s layers from background to foreground, just like the Arrange menu in Google Drawings.</p>
+        <div class="actions"><a class="btn primary" href="games/landscape/">▶ Play</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="../assets/format-en.jpg" alt="A report on an A4 page with margins, a title, a header and a footer" width="952" height="532" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">Grade 5</span><span class="tag">word processor</span></div>
+        <h3>Ready to Print</h3>
+        <p>Pupils get a school report ready to print: choose paper size and orientation, set margins, font and line spacing, format the title, add a header and a footer with the page number, then preview and print.</p>
+        <div class="actions"><a class="btn primary" href="games/format/">▶ Play</a></div>
+      </div>
+    </article>
+    <article class="card">
+      <img src="../assets/kulky.jpg" alt="A 3D block world where pupils’ animals collect balls into a chest" width="736" height="414" loading="lazy">
+      <div class="body">
+        <div class="tags"><span class="tag grade">Kindergarten / age 5–6</span><span class="tag">whole-class game</span><span class="tag">no reading</span></div>
+        <h3>Kulkosvit (Ball World)</h3>
+        <p>One shared block world for the whole class. Each child picks an animal and plays from a tablet. The Collectors fill a chest with balls together while the Troublemakers build obstacles. Five levels, a 3D world on the projector, and teams reshuffle every level. Kids play with icons only, so it works in any language.</p>
+        <div class="actions"><a class="btn" href="#class">How to run it in class ↓</a></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="wrap" id="demo">
+  <h2>See it in action</h2>
+  <video class="demo" controls muted playsinline preload="none" poster="../assets/demo-poster-en.jpg" width="1280" height="720">
+    <source src="../assets/demo-en.mp4" type="video/mp4">
+  </video>
+</section>
+
+<section class="wrap" id="class">
+  <h2>Two ways to play</h2>
+  <div class="modes">
+    <div class="box">
+      <h3>🙋 One pupil</h3>
+      <p>Click “Play” next to a game. Nothing to install. The name, selfie and progress stay in this browser only and are never sent anywhere. Great for revising at home or working through a lesson independently.</p>
+    </div>
+    <div class="box">
+      <h3>🏫 The whole class</h3>
+      <p>The teacher’s laptop becomes the class server. Pupils see a shared leaderboard, and the projector shows the standings, a lesson timer and an award ceremony for the top three.</p>
+      <ol>
+        <li><a href="https://github.com/ypadlyak/klasni-ihry/archive/refs/heads/main.zip">Download the archive</a> and unzip it.</li>
+        <li>In the <code>klas</code> folder, start the game you want: <code>python3 landscape-server.py</code> (or <code>house-</code>, <code>format-</code>, <code>kulky-server.py</code>). All you need is Python 3; no internet required.</li>
+        <li>Pupils on the same Wi-Fi open the address the server prints, for example <code>http://192.168.1.10:8000</code>.</li>
+        <li>On the projector, open <code>http://localhost:8000/board</code>.</li>
+      </ol>
+      <p>For now the class kit (teacher server and projector board) is in Ukrainian; an English version is on the way. Kulkosvit only runs in class mode, because all the children play in one world.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="license">
+  <h2>Terms of use</h2>
+  <ul class="lic">
+    <li class="ok"><b>Use in lessons</b>In any school, club or at home, for free.</li>
+    <li class="ok"><b>Adapt for your class</b>Translate, add steps, and share your versions under the same terms.</li>
+    <li class="ok"><b>Share</b>Always credit the author and link to this page.</li>
+    <li class="no"><b>Sell</b>Selling, paid courses, platforms or bundles that include these games need a separate license from the author.</li>
+  </ul>
+  <p>The games are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="license">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</a>. The full text is in <a href="https://github.com/ypadlyak/klasni-ihry/blob/main/LICENSE">LICENSE</a>, with a plain-language summary in <a href="https://github.com/ypadlyak/klasni-ihry/blob/main/LICENSING.md">LICENSING.md</a>. For a commercial license, get in touch via <a href="https://github.com/ypadlyak/klasni-ihry/issues">GitHub</a>.</p>
+</section>
+</main>
+
+<footer class="wrap">
+  © 2026 Yuriy Padlyak · <a href="https://github.com/ypadlyak/klasni-ihry">Code on GitHub</a> · Kulkosvit’s 3D world uses <a href="https://threejs.org">three.js</a> (MIT).<br>This site counts visits with <a href="https://www.goatcounter.com">GoatCounter</a>: no cookies and no personal data. Pupils’ selfies stay in their own browser. In the online games, names are never sent anywhere; in class mode they only reach the teacher’s laptop.
+</footer>
+</body>
+</html>
