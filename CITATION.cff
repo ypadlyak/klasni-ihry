@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "Якщо використовуєте ці ігри в публікаціях чи методичних розробках, посилайтеся так / If you use these games, please cite:"
+title: "Класні ігри: навчальні ігри для уроків інформатики"
+type: software
+authors:
+  - family-names: "Padlyak"
+    given-names: "Yuriy"
+    alias: "Юрій Падляк"
+license: CC-BY-NC-SA-4.0
+url: "https://ypadlyak.github.io/klasni-ihry/"
+repository-code: "https://github.com/ypadlyak/klasni-ihry"
+version: "1.0"
+date-released: "2026-11-25"
+keywords:
+  - інформатика
+  - навчальні ігри
+  - educational games

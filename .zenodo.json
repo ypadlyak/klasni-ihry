@@ -1,0 +1,11 @@
+{
+  "title": "Класні ігри: навчальні ігри для уроків інформатики",
+  "upload_type": "software",
+  "description": "<p>Безкоштовні інтерактивні навчальні ігри для уроків інформатики українською мовою.</p><ul><li><b>Будинок у перспективі</b> (7 клас): лінійна перспектива з двома точками сходу в графічному редакторі.</li><li><b>Пейзаж у перспективі</b> (7 клас): одна точка сходу, шари малюнка.</li><li><b>Реферат до друку</b> (5 клас): властивості сторінки, форматування, колонтитули, друк.</li><li><b>Кулькосвіт</b> (підготовчий клас): спільний блоковий світ для всього класу на планшетах, без читання.</li></ul><p>Ігри працюють у браузері для одного учня або на вчительському ноутбуці для всього класу, з рейтингом і таймером на проєкторі. Сайт: <a href=\"https://ypadlyak.github.io/klasni-ihry/\">https://ypadlyak.github.io/klasni-ihry/</a></p><p>Free interactive educational games for computer-science lessons (grades 0, 5, 7), Ukrainian UI.</p>",
+  "creators": [{ "name": "Padlyak, Yuriy" }],
+  "license": "cc-by-nc-sa-4.0",
+  "access_right": "open",
+  "language": "ukr",
+  "keywords": ["інформатика", "навчальні ігри", "перспектива", "форматування документа", "НУШ", "computer science education", "educational games", "Ukrainian"],
+  "related_identifiers": [{ "identifier": "https://ypadlyak.github.io/klasni-ihry/", "relation": "isDocumentedBy", "resource_type": "other" }]
+}
