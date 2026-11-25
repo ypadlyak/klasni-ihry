@@ -1,6 +1,7 @@
 # Сторонні компоненти / Third-party components
 
 - **three.js** r160 (`klas/vendor/three.module.min.js`). © 2010-2023 Three.js Authors, ліцензія MIT: https://github.com/mrdoob/three.js/blob/dev/LICENSE
+- **GoatCounter count.js** (`assets/goatcounter.js`), лічильник відвідувань, копія з gc.zgo.at, ліцензія ISC: https://opensource.org/licenses/ISC
 - **Шрифти Unbounded і Manrope** завантажуються з Google Fonts, ліцензія SIL Open Font License 1.1.
 
 ## three.js license (MIT)
